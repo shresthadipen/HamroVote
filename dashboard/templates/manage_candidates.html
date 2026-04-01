@@ -4,93 +4,168 @@
 {% block page_title %}Candidate Management{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-10">
-    <h1 class="text-2xl font-bold text-white">Election Candidates</h1>
-    <button onclick="document.getElementById('addModal').classList.remove('hidden')" class="bg-indigo-600 hover:bg-indigo-700 px-6 py-3 rounded-xl font-bold transition flex items-center">
-        <i class="fas fa-plus mr-2"></i> Add New Candidate
-    </button>
-</div>
+<div class="w-full px-2 space-y-8">
+    <!-- HEADER -->
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-white">Election Candidates</h1>
+        <!-- THIS BUTTON OPENS THE MODAL -->
+        <button onclick="document.getElementById('addModal').classList.remove('hidden')" 
+                class="bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 rounded-xl font-bold transition flex items-center text-sm shadow-lg shadow-indigo-500/20">
+            <i class="fas fa-plus mr-2 text-xs"></i> Register Candidate
+        </button>
+    </div>
 
-<!-- Candidate Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-    {% for c in candidates %}
-    <div class="card overflow-hidden">
-        <div class="h-48 bg-gray-800 relative">
-            {% if c.photo %}
-                <img src="{{ c.photo.url }}" class="w-full h-full object-cover opacity-70">
-            {% else %}
-                <div class="w-full h-full flex items-center justify-center text-gray-600"><i class="fas fa-user text-5xl"></i></div>
-            {% endif %}
-            <div class="absolute bottom-4 left-4">
-                <span class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase">{{ c.position.title }}</span>
-            </div>
+    <!-- MAIN LIST (Grouped by Election) -->
+    {% for election in elections %}
+    <div class="space-y-4">
+        <!-- Election Header Divider -->
+        <div class="flex items-center gap-4">
+            <h2 class="text-sm font-bold text-indigo-400 flex items-center whitespace-nowrap">
+                <i class="fas fa-vote-yea mr-2 text-xs"></i> {{ election.title }}
+            </h2>
+            <div class="h-[1px] flex-1 bg-gray-800"></div>
+            <span class="text-[10px] font-black uppercase tracking-widest text-gray-500 whitespace-nowrap">{{ election.status }}</span>
         </div>
-        <div class="p-6">
-            <h3 class="text-xl font-bold text-white mb-1">{{ c.name }}</h3>
-           <p class="text-gray-500 text-sm line-clamp-2 mb-6">{{ c.bio }}</p>
-            
-            <div class="flex justify-between items-center pt-4 border-t border-gray-800">
-               <a href="{% url 'dashboard:edit_candidate' c.id %}" class="text-gray-400 hover:text-white text-sm"><i class="fas fa-edit mr-1"></i> Edit</a>
-                <a href="{% url 'dashboard:delete_candidate' c.id %}" onclick="return confirm('Remove this candidate?')" class="text-red-500 hover:text-red-400 font-medium text-sm">
-                    <i class="fas fa-trash-alt mr-1"></i> Delete
-                </a>
-            </div>
+
+        <!-- Grid of Candidates -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+            {% for position in election.positions.all %}
+                {% for c in position.candidates.all %}
+                <div class="card overflow-hidden group">
+                    <div class="h-36 bg-gray-800 relative overflow-hidden">
+                        {% if c.photo %}
+                            <img src="{{ c.photo.url }}" class="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500">
+                        {% else %}
+                            <div class="w-full h-full flex items-center justify-center text-gray-700 bg-gray-900">
+                                <i class="fas fa-user text-3xl"></i>
+                            </div>
+                        {% endif %}
+                        <div class="absolute bottom-3 left-3">
+                            <span class="bg-indigo-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase">{{ position.title }}</span>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-white text-sm truncate">{{ c.name }}</h3>
+                        <div class="flex justify-between items-center pt-3 mt-3 border-t border-gray-800">
+                            <a href="{% url 'dashboard:edit_candidate' c.id %}" class="text-gray-400 hover:text-white text-[10px] uppercase font-bold tracking-tighter transition">Edit</a>
+                            <a href="{% url 'dashboard:delete_candidate' c.id %}" onclick="return confirm('Remove this candidate?')" class="text-red-500/50 hover:text-red-400 text-[10px] uppercase font-bold tracking-tighter transition">Remove</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endfor %}
         </div>
     </div>
     {% endfor %}
 </div>
 
 <!-- ADD MODAL -->
-<div id="addModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-    <div class="card max-w-2xl w-full p-8 relative max-h-[90vh] overflow-y-auto">
-        <button onclick="document.getElementById('addModal').classList.add('hidden')" class="absolute top-6 right-6 text-gray-500 hover:text-white text-2xl">
+<div id="addModal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+    <div class="card max-w-2xl w-full p-8 relative max-h-[90vh] overflow-y-auto border-indigo-500/20 shadow-2xl">
+        <!-- Close Button -->
+        <button onclick="document.getElementById('addModal').classList.add('hidden')" class="absolute top-6 right-6 text-gray-500 hover:text-white text-xl transition">
             <i class="fas fa-times"></i>
         </button>
+        
         <h2 class="text-2xl font-bold text-white mb-8">Register Candidate</h2>
         
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="grid grid-cols-2 gap-6">
-                <!-- Full Name -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                
                 <div class="col-span-2">
-                    <label class="block text-sm text-gray-400 mb-2">Candidate Full Name</label>
-                    <input type="text" name="name" class="input-style" required>
-                </div>
-
-                <!-- Position Selection -->
-                <div>
-                    <label class="block text-sm text-gray-400 mb-2">Position</label>
-                    <select name="position" class="input-style" required>
-                        {% for p in positions %}
-                            <option value="{{ p.id }}">{{ p.title }}</option>
+                    <label class="block text-[10px] text-gray-500 mb-2 uppercase font-black tracking-widest">1. Select Election</label>
+                    <select id="election-select" class="input-style text-sm" required>
+                        <option value="">-- Choose Election Event --</option>
+                        {% for e in elections %}
+                            <option value="{{ e.id }}">{{ e.title }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
-                <!-- Photo Upload -->
                 <div>
-                    <label class="block text-sm text-gray-400 mb-2">Profile Photo</label>
-                    <input type="file" name="photo" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-gray-800 file:text-gray-300">
+                    <label class="block text-[10px] text-gray-500 mb-2 uppercase font-black tracking-widest">2. Position</label>
+                    <select id="position-select" name="position" class="input-style text-sm" required disabled>
+                        <option value="">Select Election first...</option>
+                    </select>
                 </div>
 
-
-                <!-- Bio -->
-                <div class="col-span-2">
-                    <label class="block text-sm text-gray-400 mb-2">Short Bio</label>
-                    <textarea name="bio" rows="2" class="input-style" placeholder="Brief introduction..."></textarea>
+                <div>
+                    <label class="block text-[10px] text-gray-500 mb-2 uppercase font-black tracking-widest">Profile Photo</label>
+                    <input type="file" name="photo" 
+                           class="block w-full text-xs text-gray-400
+                                  file:mr-4 file:py-2.5 file:px-4
+                                  file:rounded-xl file:border-0
+                                  file:text-[10px] file:font-black file:uppercase
+                                  file:bg-indigo-600 file:text-white
+                                  hover:file:bg-indigo-700
+                                  cursor-pointer bg-gray-800/50 rounded-xl border border-gray-700">
                 </div>
 
-                <!-- Manifesto -->
                 <div class="col-span-2">
-                    <label class="block text-sm text-gray-400 mb-2">Election Manifesto</label>
-                    <textarea name="manifesto" rows="4" class="input-style" placeholder="Describe the candidate's promises and goals..." required></textarea>
+                    <label class="block text-[10px] text-gray-500 mb-2 uppercase font-black tracking-widest">Candidate Full Name</label>
+                    <input type="text" name="name" class="input-style text-sm" placeholder="e.g. Rahul Joshi" required>
+                </div>
+
+                <div class="col-span-2">
+                    <label class="block text-[10px] text-gray-500 mb-2 uppercase font-black tracking-widest">Short Bio</label>
+                    <textarea name="bio" rows="2" class="input-style text-sm" placeholder="Short intro..."></textarea>
+                </div>
+
+                <div class="col-span-2">
+                    <label class="block text-[10px] text-gray-500 mb-2 uppercase font-black tracking-widest">Manifesto</label>
+                    <textarea name="manifesto" rows="4" class="input-style text-sm" placeholder="Describe promises..." required></textarea>
                 </div>
             </div>
 
-            <button type="submit" name="add_candidate" class="w-full bg-indigo-600 mt-8 py-4 rounded-xl font-bold hover:bg-indigo-700 transition">
+            <!-- IMPORTANT: name="add_candidate" must be here for the view to work -->
+            <button type="submit" name="add_candidate" class="w-full bg-indigo-600 mt-10 py-4 rounded-2xl font-black text-white hover:bg-indigo-700 transition uppercase tracking-widest text-xs">
                 Confirm Registration
             </button>
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const electionSelect = document.getElementById('election-select');
+    const positionSelect = document.getElementById('position-select');
+
+    // Use Django's URL tag to get the base path correctly
+    const ajaxUrl = "{% url 'dashboard:get_positions_ajax' %}";
+
+    electionSelect.addEventListener('change', function() {
+        const electionId = this.value;
+        
+        positionSelect.innerHTML = '<option value="">Loading positions...</option>';
+        positionSelect.disabled = true;
+
+        if (electionId) {
+            // We append the election_id as a query parameter
+            fetch(`${ajaxUrl}?election_id=${electionId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Server returned error');
+                    return response.json();
+                })
+                .then(data => {
+                    positionSelect.innerHTML = '<option value="">-- Select Position --</option>';
+                    data.forEach(pos => {
+                        const option = document.createElement('option');
+                        option.value = pos.id;
+                        option.text = pos.title;
+                        positionSelect.add(option);
+                    });
+                    positionSelect.disabled = false;
+                })
+                .catch(err => {
+                    console.error("AJAX Error:", err);
+                    positionSelect.innerHTML = '<option value="">Error loading. Refresh page.</option>';
+                });
+        } else {
+            positionSelect.innerHTML = '<option value="">Select Election first...</option>';
+            positionSelect.disabled = true;
+        }
+    });
+</script>
 {% endblock %}

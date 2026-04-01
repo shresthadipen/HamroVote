@@ -1,79 +1,118 @@
 {% extends 'dashboard/base.html' %}
 
-{% block title %}Manage Students{% endblock %}
-{% block page_title %}Student Management{% endblock %}
-
 {% block content %}
 <!-- FORMS SECTION -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-    
-    <!-- LEFT: MANUAL ADD -->
+    <!-- Manual Add -->
     <div class="card p-8">
         <h2 class="text-xl font-bold mb-6 text-white"><i class="fas fa-user-plus mr-2 text-indigo-500"></i> Add Student Manually</h2>
         <form method="POST">
             {% csrf_token %}
             <div class="space-y-4">
-                <div>
-                    <label class="block text-sm text-gray-400 mb-2">Registration Number</label>
-                    <input type="text" name="registration_number" class="input-style" placeholder="e.g. 076BCT001" required>
-                </div>
-                <div>
-                    <label class="block text-sm text-gray-400 mb-2">Full Name</label>
-                    <input type="text" name="full_name" class="input-style" placeholder="e.g. Rahul Joshi" required>
-                </div>
-                <button type="submit" name="manual_add" class="w-full bg-indigo-600 hover:bg-indigo-700 py-3 rounded-xl font-bold transition">
-                    Save Student
-                </button>
+                <input type="text" name="registration_number" class="input-style" placeholder="Registration Number (e.g. 012456)" required>
+                <input type="text" name="full_name" class="input-style" placeholder="Full Name" required>
+                <button type="submit" name="manual_add" class="w-full bg-indigo-600 hover:bg-indigo-700 py-3 rounded-xl font-bold transition">Save Student</button>
             </div>
         </form>
     </div>
 
-    <!-- RIGHT: BULK CSV UPLOAD -->
-    <div class="card p-8">
-        <h2 class="text-xl font-bold mb-6 text-white"><i class="fas fa-file-csv mr-2 text-green-500"></i> Bulk Upload (CSV)</h2>
+    <!-- Bulk Upload -->
+    <div class="card p-8 text-center">
+        <h2 class="text-xl font-bold mb-6 text-left text-white"><i class="fas fa-file-csv mr-2 text-green-500"></i> Bulk Import (CSV)</h2>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="border-2 border-dashed border-gray-700 rounded-2xl p-10 text-center mb-6 hover:border-indigo-500 transition cursor-pointer" onclick="document.getElementById('csv_file').click()">
-                <input type="file" name="file" id="csv_file" class="hidden" required>
-                <i class="fas fa-cloud-upload-alt text-4xl text-gray-600 mb-4"></i>
-                <p class="text-gray-400">Click to select CSV File</p>
-                <p class="text-xs text-gray-600 mt-2">Format: reg_number, full_name</p>
+            <div class="border-2 border-dashed border-gray-700 rounded-2xl p-10 mb-4">
+                <input type="file" name="file" class="text-xs text-gray-500" required>
+                <p class="text-[10px] text-gray-600 mt-2">CSV Format: registration_number, full_name</p>
             </div>
-            <button type="submit" name="bulk_upload" class="w-full bg-emerald-600 hover:bg-emerald-700 py-3 rounded-xl font-bold transition">
-                Import All Students
-            </button>
+            <button type="submit" name="bulk_upload" class="w-full bg-emerald-600 hover:bg-emerald-700 py-3 rounded-xl font-bold transition">Upload List</button>
         </form>
     </div>
 </div>
 
 <!-- STUDENT LIST TABLE -->
 <div class="card overflow-hidden">
-    <div class="p-6 border-b border-gray-800 flex justify-between items-center">
+    <div class="p-6 border-b border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
         <h3 class="font-bold text-lg text-white">Authorized Student List</h3>
+        
+        <div class="flex items-center gap-4 w-full md:w-auto">
+            <!-- Status Filter -->
+            <select id="statusFilter" onchange="filterTable()" 
+                    class="bg-gray-900 border border-gray-700 rounded-xl px-4 py-2 text-xs text-gray-400 outline-none focus:border-indigo-500">
+                <option value="all">All Status</option>
+                <option value="registered">Registered</option>
+                <option value="pending">Pending</option>
+            </select>
+
+            <!-- Search Bar -->
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <i class="fas fa-search text-gray-600 text-xs"></i>
+                </span>
+                <input type="text" id="studentSearch" onkeyup="filterTable()" 
+                       placeholder="Search Name or Reg No..." 
+                       class="w-full md:w-64 bg-gray-900 border border-gray-700 rounded-xl py-2 pl-10 pr-4 text-xs text-white outline-none focus:border-indigo-500">
+            </div>
+        </div>
     </div>
-    <table class="w-full text-left">
-        <thead class="bg-gray-800/40 text-gray-400 text-sm">
-            <tr>
-                <th class="p-5">Reg Number</th>
-                <th class="p-5">Full Name</th>
-                <th class="p-5">Signup Status</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-800">
-            {% for s in students %}
-            <tr class="hover:bg-white/5 transition">
-                <td class="p-5 font-mono text-indigo-400">{{ s.registration_number }}</td>
-                <td class="p-5 font-medium">{{ s.full_name }}</td>
-                <td class="p-5">
-                    {% if s.is_registered %}
-                    <span class="text-emerald-500 flex items-center text-sm"><i class="fas fa-check-circle mr-2"></i> Registered</span>
-                    {% else %}
-                    <span class="text-gray-500 flex items-center text-sm"><i class="fas fa-clock mr-2"></i> Pending Signup</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left" id="studentTable">
+            <thead class="bg-gray-800/40 text-gray-500 text-[10px] uppercase font-black">
+                <tr>
+                    <th class="p-5">Reg Number</th>
+                    <th class="p-5">Full Name</th>
+                    <th class="p-5">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800">
+                {% for v in voters %}
+                <tr class="student-row hover:bg-white/5 transition" 
+                    data-status="{% if v.is_registered %}registered{% else %}pending{% endif %}">
+                    <td class="p-5 font-mono text-indigo-400 text-sm reg-col">{{ v.registration_number }}</td>
+                    <td class="p-5 text-sm text-gray-200 name-col">{{ v.full_name }}</td>
+                    <td class="p-5">
+                        {% if v.is_registered %}
+                            <span class="text-emerald-500 text-[10px] font-bold uppercase"><i class="fas fa-check-circle mr-1"></i> Registered</span>
+                        {% else %}
+                            <span class="text-gray-600 text-[10px] font-bold uppercase italic">Pending Signup</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="p-20 text-center text-gray-600 italic text-sm">
+                        No authorized students found. Add them manually or via CSV.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterTable() {
+        const searchInput = document.getElementById("studentSearch").value.toUpperCase();
+        const statusFilter = document.getElementById("statusFilter").value;
+        const rows = document.querySelectorAll(".student-row");
+
+        rows.forEach(row => {
+            const regNo = row.querySelector(".reg-col").textContent.toUpperCase();
+            const name = row.querySelector(".name-col").textContent.toUpperCase();
+            const rowStatus = row.getAttribute("data-status");
+
+            const matchesSearch = regNo.includes(searchInput) || name.includes(searchInput);
+            const matchesStatus = (statusFilter === "all") || (rowStatus === statusFilter);
+
+            if (matchesSearch && matchesStatus) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+</script>
 {% endblock %}

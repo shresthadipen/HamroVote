@@ -12,15 +12,25 @@ class Election(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.title} ({self.start_date.year})"
+        return self.title
 
+    # --- THE TIME LOGIC ---
     @property
     def is_running(self):
         now = timezone.now()
+        # Election is running ONLY if: Start < Now < End AND is_active is True
         return self.start_date <= now <= self.end_date and self.is_active
 
-    class Meta:
-        ordering = ['-start_date']
+    @property
+    def status(self):
+        now = timezone.now()
+        if not self.is_active:
+            return "Disabled"
+        if now < self.start_date:
+            return "Upcoming"
+        elif now > self.end_date:
+            return "Closed"
+        return "Running"
 
 class Position(models.Model):
     election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='positions')
@@ -65,3 +75,19 @@ class Vote(models.Model):
 
     def __str__(self):
         return f"{self.voter.student.full_name} voted for {self.candidate.name}"
+    
+
+# voter/models.py
+
+class AuthorizedVoter(models.Model):
+    # This links an election to a registration number
+    election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='authorized_list')
+    registration_number = models.CharField(max_length=50)
+    full_name = models.CharField(max_length=100)
+
+    class Meta:
+        # Prevents adding the same student twice to the same election
+        unique_together = ['election', 'registration_number']
+
+    def __str__(self):
+        return f"{self.registration_number} for {self.election.title}"

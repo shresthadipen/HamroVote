@@ -1,0 +1,67 @@
+{% extends 'dashboard/base.html' %}
+{% block page_title %}Edit Election Schedule{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="card p-8">
+        <h2 class="text-2xl font-bold text-white mb-8 text-center">Edit Election Schedule</h2>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <!-- ADD THIS: Specific Error Display -->
+            {% if form.errors %}
+            <div class="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200 text-sm">
+                <p class="font-bold mb-2">Please fix the following:</p>
+                <ul class="list-disc list-inside">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <div class="space-y-6">
+                <!-- Title -->
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2 uppercase font-bold text-[10px] tracking-widest">Election Title</label>
+                    {{ form.title }}
+                </div>
+
+                <!-- ADD THIS: Description (Required by your model) -->
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2 uppercase font-bold text-[10px] tracking-widest">Description</label>
+                    {{ form.description }}
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2 uppercase font-bold text-[10px] tracking-widest">Start Date</label>
+                        {{ form.start_date }}
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2 uppercase font-bold text-[10px] tracking-widest">End Date</label>
+                        {{ form.end_date }}
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-3 p-4 bg-gray-800/30 rounded-xl border border-gray-800">
+                    {{ form.is_active }}
+                    <label class="text-sm font-medium text-gray-300">Election is Active</label>
+                </div>
+
+                <div class="flex space-x-4 pt-4">
+                    <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 py-3 rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all">
+                        Update Timing
+                    </button>
+                    <a href="{% url 'dashboard:manage_elections' %}" class="flex-1 bg-gray-800 text-center py-3 rounded-xl font-bold hover:bg-gray-700 transition">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

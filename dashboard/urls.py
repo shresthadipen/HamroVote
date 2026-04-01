@@ -16,4 +16,8 @@ urlpatterns = [
     path('candidates/', views.manage_candidates, name='manage_candidates'),
     path('candidates/delete/<int:candidate_id>/', views.delete_candidate, name='delete_candidate'),
     path('candidates/edit/<int:pk>/', views.edit_candidate, name='edit_candidate'),
+
+    path('elections/', views.manage_elections, name='manage_elections'),
+path('elections/edit/<int:pk>/', views.edit_election, name='edit_election'),
+path('ajax/get-positions/', views.get_positions_ajax, name='get_positions_ajax'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

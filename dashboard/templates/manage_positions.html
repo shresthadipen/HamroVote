@@ -1,28 +1,110 @@
 {% extends 'dashboard/base.html' %}
-{% block page_title %}Voting Positions{% endblock %}
+
+{% block page_title %}Manage Positions{% endblock %}
 
 {% block content %}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
-    <div class="card p-8 h-fit">
-        <h3 class="font-bold mb-6">Create New Position</h3>
-        <form method="POST" class="space-y-4">
+<!-- Use w-full and px-2 to match the Student page alignment -->
+<div class="w-full px-2 space-y-8">
+
+    <!-- 1. CREATE POSITION CARD -->
+    <div class="card p-6 shadow-xl border-t-2 border-indigo-600">
+        <h3 class="text-lg font-bold text-white mb-6 flex items-center">
+            <i class="fas fa-plus-circle mr-3 text-indigo-500"></i> Register New Category
+        </h3>
+        
+        <form method="POST">
             {% csrf_token %}
-            <input type="text" name="title" placeholder="e.g. Class President" class="input-style" required>
-            <textarea name="description" placeholder="Short description..." class="input-style" rows="3"></textarea>
-            <button type="submit" name="add_position" class="w-full bg-indigo-600 py-3 rounded-xl font-bold">Save Position</button>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Select Election -->
+                <div>
+                    <label class="block text-[10px] text-gray-500 mb-2 uppercase font-black tracking-widest">Election Event</label>
+                    <select name="election_id" class="input-style text-sm py-2" required>
+                        {% for e in elections %}
+                            <option value="{{ e.id }}">{{ e.title }} ({{ e.status }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Position Name -->
+                <div>
+                    <label class="block text-[10px] text-gray-500 mb-2 uppercase font-black tracking-widest">Position Name</label>
+                    <input type="text" name="title" placeholder="e.g. Class President" class="input-style text-sm py-2" required>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-[10px] text-gray-500 mb-2 uppercase font-black tracking-widest">Short Description</label>
+                    <input type="text" name="description" placeholder="e.g. Heads the student council" class="input-style text-sm py-2">
+                </div>
+            </div>
+
+            <div class="flex justify-end mt-6">
+                <button type="submit" name="add_position" class="bg-indigo-600 hover:bg-indigo-700 px-8 py-2.5 rounded-xl font-bold text-white text-sm transition-all shadow-lg shadow-indigo-500/10">
+                    Add Position
+                </button>
+            </div>
         </form>
     </div>
 
-    <div class="lg:col-span-2 space-y-4">
-        {% for p in positions %}
-        <div class="card p-6 flex justify-between items-center">
-            <div>
-                <h4 class="font-bold text-lg text-white">{{ p.title }}</h4>
-                <p class="text-sm text-gray-500">{{ p.candidates.count }} Candidates registered</p>
+    <!-- 2. GROUPED POSITIONS LIST -->
+    <div class="space-y-8">
+        <div class="flex items-center justify-between px-2">
+            <h2 class="text-xl font-bold text-white">Current Ballots</h2>
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Organized by Election Event</p>
+        </div>
+
+        {% for e in elections %}
+        <div class="space-y-3">
+            <!-- Election Header Divider (Tightened) -->
+            <div class="flex items-center gap-4 px-2">
+                <h3 class="text-sm font-bold text-indigo-400 flex items-center whitespace-nowrap">
+                    <i class="fas fa-vote-yea mr-2 text-xs"></i> {{ e.title }}
+                </h3>
+                <div class="h-[1px] flex-1 bg-gray-800/60"></div>
+                <span class="text-[9px] font-black px-2 py-0.5 rounded-md {% if e.status == 'Running' %}bg-emerald-500/10 text-emerald-500{% else %}bg-gray-800 text-gray-500{% endif %} uppercase tracking-widest">
+                    {{ e.status }}
+                </span>
             </div>
-            <div class="flex space-x-3">
-                <a href="{% url 'dashboard:edit_position' p.id %}" class="p-2 text-indigo-400 hover:text-indigo-300"><i class="fas fa-edit"></i></a>
-<a href="{% url 'dashboard:delete_position' p.id %}" onclick="return confirm('Delete this position?')" class="p-2 text-red-500"><i class="fas fa-trash"></i></a>
+
+            <!-- Positions Table (Fluid width to match Student table) -->
+            <div class="card overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-800/40 text-gray-500 text-[10px] uppercase font-black">
+                        <tr>
+                            <th class="p-4 w-1/4">Position Title</th>
+                            <th class="p-4">Role Description</th>
+                            <th class="p-4 w-32 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-800">
+                        {% for p in e.positions.all %}
+                        <tr class="hover:bg-white/5 transition">
+                            <td class="p-4">
+                                <span class="font-bold text-gray-200 text-sm">{{ p.title }}</span>
+                            </td>
+                            <td class="p-4 text-xs text-gray-500 italic">
+                                {{ p.description|default:"No description provided for this role." }}
+                            </td>
+                            <td class="p-4">
+                                <div class="flex justify-end gap-2">
+                                    <a href="{% url 'dashboard:edit_position' p.id %}" class="w-7 h-7 rounded-lg bg-gray-800 flex items-center justify-center text-indigo-400 hover:bg-indigo-600 hover:text-white transition">
+                                        <i class="fas fa-edit text-[10px]"></i>
+                                    </a>
+                                    <a href="{% url 'dashboard:delete_position' p.id %}" onclick="return confirm('Delete this position?')" class="w-7 h-7 rounded-lg bg-gray-800 flex items-center justify-center text-red-500/60 hover:bg-red-600 hover:text-white transition">
+                                        <i class="fas fa-trash text-[10px]"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="p-6 text-center text-gray-600 italic text-xs">
+                                No positions defined for this election yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
         {% endfor %}

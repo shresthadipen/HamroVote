@@ -1,0 +1,13 @@
+<h1 class="text-3xl font-bold">{{ election.title }} Ballot</h1>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {% for pos in positions %}
+    <div class="card p-6">
+        <h3 class="text-lg font-bold">{{ pos.title }}</h3>
+        {% if pos.id in voted_ids %}
+            <span class="text-green-500">Selection Recorded</span>
+        {% else %}
+            <a href="{% url 'voter:candidates' pos.id %}" class="...">View Candidates</a>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
