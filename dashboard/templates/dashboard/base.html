@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard{% endblock %} | HamroVote</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #111319; color: #e5e7eb; font-family: 'Inter', sans-serif; }
+        .sidebar { background-color: #111319; border-right: 1px solid #2d2f39; }
+        .card { background-color: #1a1c23; border: 1px solid #2d2f39; border-radius: 1.25rem; }
+        .nav-link { color: #9ca3af; padding: 0.85rem 1.25rem; display: flex; align-items: center; border-radius: 0.75rem; transition: 0.2s; }
+        .nav-link:hover { background-color: rgba(255,255,255,0.05); color: #fff; }
+        .nav-link.active { background-color: #4f46e5; color: #fff; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3); }
+        .input-style { background-color: #111319; border: 1px solid #2d2f39; border-radius: 0.75rem; padding: 0.75rem; width: 100%; color: white; outline: none; transition: 0.2s; }
+        .input-style:focus { border-color: #4f46e5; background-color: #16181d; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <aside class="w-72 sidebar p-6 flex flex-col sticky top-0 h-screen">
+        <div class="flex items-center space-x-3 mb-12 px-2">
+            <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <i class="fas fa-vote-yea text-white text-xl"></i>
+            </div>
+            <span class="text-2xl font-bold tracking-tight text-white">HamroVote</span>
+        </div>
+
+        <nav class="flex-1 space-y-2">
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 px-3">Main Menu</p>
+            
+            <a href="{% url 'dashboard:admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                <i class="fas fa-chart-line w-8"></i> Analytics
+            </a>
+            
+            <a href="{% url 'dashboard:manage_students' %}" class="nav-link {% if request.resolver_match.url_name == 'manage_students' %}active{% endif %}">
+                <i class="fas fa-user-graduate w-8"></i> Students
+            </a>
+
+            <a href="{% url 'dashboard:manage_positions' %}" class="nav-link {% if request.resolver_match.url_name == 'manage_positions' %}active{% endif %}">
+                <i class="fas fa-layer-group w-8"></i> Positions
+            </a>
+
+            <a href="{% url 'dashboard:manage_candidates' %}" class="nav-link {% if request.resolver_match.url_name == 'manage_candidates' %}active{% endif %}">
+                <i class="fas fa-id-card w-8"></i> Candidates
+            </a>
+        </nav>
+
+        <div class="mt-auto pt-6 border-t border-gray-800">
+            <a href="{% url 'accounts:logout' %}" class="nav-link text-red-400 hover:bg-red-500/10">
+                <i class="fas fa-sign-out-alt w-8"></i> Sign Out
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
+        <!-- Header -->
+        <header class="h-20 border-b border-gray-800 flex items-center justify-between px-10 bg-[#111319]/80 backdrop-blur-md sticky top-0 z-40">
+            <h2 class="text-xl font-semibold text-white">{% block page_title %}Dashboard{% endblock %}</h2>
+            <div class="flex items-center space-x-4">
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-medium text-white">{{ user.get_full_name|default:user.username }}</p>
+                    <p class="text-xs text-gray-500">Administrator</p>
+                </div>
+                <img src="https://ui-avatars.com/api/?name=Admin&background=4f46e5&color=fff" class="w-10 h-10 rounded-xl">
+            </div>
+        </header>
+
+        <main class="p-10 flex-1">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="mb-6 p-4 rounded-xl border {% if message.tags == 'error' %}bg-red-500/10 border-red-500/30 text-red-400{% else %}bg-indigo-500/10 border-indigo-500/30 text-indigo-400{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

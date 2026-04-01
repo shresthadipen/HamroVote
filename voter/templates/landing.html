@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HamroVote - Secure Student Voting System</title>
+    
+    {% load static %}
+    <link href="{% static 'css/dist/styles.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .btn-primary {
+            background: linear-gradient(to right, #667eea, #764ba2);
+        }
+        .feature-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Simple Navigation -->
+    <nav class="sticky top-0 bg-white shadow-sm z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="/" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-vote-yea text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold text-gray-800">HamroVote</span>
+                </a>
+
+                <!-- Simple Menu -->
+                <div class="flex items-center space-x-4">
+                    <a href="#features" class="text-gray-600 hover:text-blue-600 hidden md:block">Features</a>
+                    <a href="#how-it-works" class="text-gray-600 hover:text-blue-600 hidden md:block">How It Works</a>
+                        <a href="{% url 'accounts:login' %}" class="px-4 py-2 text-blue-600 hover:text-blue-700">
+                            Login
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            Register
+                        </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white">
+        <div class="container mx-auto px-4 py-20 md:py-28">
+            <div class="max-w-3xl mx-auto text-center">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-full backdrop-blur-sm mb-6">
+                    <i class="fas fa-vote-yea text-3xl"></i>
+                </div>
+                
+                <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                    Secure Online Voting for
+                    <span class="bg-gradient-to-r from-yellow-300 to-pink-300 bg-clip-text text-transparent">
+                        Elections
+                    </span>
+                </h1>
+                
+                <p class="text-xl text-blue-100 mb-8">
+                   Designed to handle elections of any size - from classroom polls to national referendums.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    {% if user.is_authenticated %}
+                        <a href="#" class="px-8 py-3 bg-white text-blue-600 rounded-lg font-bold hover:shadow-lg">
+                            <i class="fas fa-vote-yea mr-2"></i>Cast Your Vote
+                        </a>
+                    {% else %}
+                        <a href="{% url 'accounts:register' %}" class="px-8 py-3 bg-white text-blue-600 rounded-lg font-bold hover:shadow-lg">
+                            <i class="fas fa-user-plus mr-2"></i>Get Started
+                        </a>
+                    {% endif %}
+                    <a href="#features" class="px-8 py-3 border-2 border-white text-white rounded-lg font-bold hover:bg-white/10">
+                        <i class="fas fa-play-circle mr-2"></i>Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Introduction -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-3xl font-bold mb-6">Welcome to HamroVote</h2>
+                <p class="text-lg text-gray-600 mb-6">
+                    <strong>This voting system is developed for Kathmandu College students</strong> to participate in student council elections securely and conveniently from anywhere.
+                </p>
+                <p class="text-gray-600">
+                    Only registered students with valid college credentials can access the voting system. The platform ensures complete anonymity and security while maintaining transparency in the election process.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Why Choose HamroVote?</h2>
+                <p class="text-gray-600">Built with students in mind, designed for modern democracy</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-6 mx-auto">
+                        <i class="fas fa-shield-alt text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4 text-center">Secure Voting</h3>
+                    <p class="text-gray-600 text-center">End-to-end encrypted voting system ensures your vote remains anonymous and tamper-proof.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <div class="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mb-6 mx-auto">
+                        <i class="fas fa-user-check text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4 text-center">Verified Access</h3>
+                    <p class="text-gray-600 text-center">Only registered students can vote, ensuring one student - one vote principle.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <div class="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mb-6 mx-auto">
+                        <i class="fas fa-bolt text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4 text-center">Instant Results</h3>
+                    <p class="text-gray-600 text-center">Get election results instantly after voting closes. No manual counting delays.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">How It Works</h2>
+                <p class="text-gray-600">Simple three-step process to cast your vote</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                <!-- Step 1 -->
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="text-2xl font-bold text-blue-600">1</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Register</h3>
+                    <p class="text-gray-600">Use your college credentials to create your account.</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="text-2xl font-bold text-green-600">2</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Review Candidates</h3>
+                    <p class="text-gray-600">Check candidate profiles and their election promises.</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="text-2xl font-bold text-purple-600">3</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Vote</h3>
+                    <p class="text-gray-600">Cast your vote securely from any device.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-6">Ready to Make Your Voice Heard?</h2>
+            <p class="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
+                Join your fellow students in fair and transparent elections.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                {% if user.is_authenticated %}
+                    <a href="#" class="px-8 py-3 bg-white text-blue-600 rounded-lg font-bold hover:shadow-lg">
+                        <i class="fas fa-vote-yea mr-2"></i>Go to Voting Booth
+                    </a>
+                {% else %}
+                    <a href="{% url 'accounts:register' %}" class="px-8 py-3 bg-white text-blue-600 rounded-lg font-bold hover:shadow-lg">
+                        <i class="fas fa-user-plus mr-2"></i>Register Now
+                    </a>
+                    <a href="{% url 'accounts:login' %}" class="px-8 py-3 border-2 border-white text-white rounded-lg font-bold hover:bg-white/10">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Student Login
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-vote-yea text-white"></i>
+                        </div>
+                        <span class="text-2xl font-bold">HamroVote</span>
+                    </div>
+                    <p class="text-gray-400">Secure online voting system.</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#features" class="text-gray-400 hover:text-white">Features</a></li>
+                        <li><a href="#how-it-works" class="text-gray-400 hover:text-white">How It Works</a></li>
+                        {% if user.is_authenticated %}
+                        <li><a href="#" class="text-gray-400 hover:text-white">Vote Now</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Need Help?</h4>
+                    <p class="text-gray-400 mb-2">For voting-related issues, contact your college election committee.</p>
+                    <p class="text-gray-400 text-sm">This system is exclusively for registered students.</p>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500">
+                <p>&copy; 2024 HamroVote. Student Voting System.</p>
+                <p class="text-sm mt-2">A project by Dipen Shrestha (076BCT020)</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

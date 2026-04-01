@@ -1,0 +1,46 @@
+{% extends 'dashboard/base.html' %}
+{% block page_title %}Edit Candidate{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="card p-8">
+        <h2 class="text-2xl font-bold text-white mb-8">Update Candidate Profile</h2>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="grid grid-cols-2 gap-6">
+                <div class="col-span-2">
+                    <label class="block text-sm text-gray-400 mb-2">Full Name</label>
+                    <input type="text" name="name" value="{{ candidate.name }}" class="input-style" required>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Position</label>
+                    <select name="position" class="input-style">
+                        {% for p in positions %}
+                            <option value="{{ p.id }}" {% if p.id == candidate.position.id %}selected{% endif %}>{{ p.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Upload New Photo (Optional)</label>
+                    <input type="file" name="photo" class="input-style">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm text-gray-400 mb-2">Short Bio</label>
+                    <textarea name="bio" rows="2" class="input-style">{{ candidate.bio }}</textarea>
+                </div>
+                
+                <!-- ADD THIS SECTION FOR MANIFESTO -->
+                <div class="col-span-2">
+                    <label class="block text-sm text-gray-400 mb-2">Election Manifesto</label>
+                    <textarea name="manifesto" rows="5" class="input-style" required>{{ candidate.manifesto }}</textarea>
+                </div>
+                
+                <div class="col-span-2">
+                    <button type="submit" class="w-full bg-indigo-600 py-4 rounded-xl font-bold">Save Changes</button>
+                    <a href="{% url 'dashboard:manage_candidates' %}" class="block text-center mt-4 text-gray-500">Cancel and Back</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

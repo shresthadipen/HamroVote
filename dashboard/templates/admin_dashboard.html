@@ -1,0 +1,83 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Analytics{% endblock %}
+{% block page_title %}System Analytics{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+    <div class="card p-6">
+        <p class="text-gray-400 text-sm mb-1">Total Students</p>
+        <h3 class="text-3xl font-bold">{{ total_students }}</h3>
+    </div>
+    <div class="card p-6">
+        <p class="text-gray-400 text-sm mb-1">Registered Voters</p>
+        <h3 class="text-3xl font-bold text-indigo-500">{{ registered_voters }}</h3>
+    </div>
+    <div class="card p-6">
+        <p class="text-gray-400 text-sm mb-1">Total Votes Cast</p>
+        <h3 class="text-3xl font-bold text-emerald-500">{{ total_votes }}</h3>
+    </div>
+    <div class="card p-6">
+        <p class="text-gray-400 text-sm mb-1">Turnout</p>
+        <h3 class="text-3xl font-bold text-orange-400">{{ turnout }}%</h3>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="card p-8">
+        <h3 class="font-bold mb-6 text-lg">Votes per Position</h3>
+        <canvas id="voteChart"></canvas>
+    </div>
+    <div class="card p-8">
+        <h3 class="font-bold mb-6 text-lg">Signup Progress</h3>
+        <canvas id="regChart"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Define data first (Red lines may still appear, but logic is separated)
+    const posLabels = {{ pos_labels|safe }};
+    const posData = {{ pos_data|safe }};
+    const registeredCount = {{ registered_voters|default:0 }};
+    const totalCount = {{ total_students|default:0 }};
+    const pendingCount = totalCount - registeredCount;
+
+    // Vote Distribution Chart
+    const ctxVote = document.getElementById('voteChart');
+    if (ctxVote) {
+        new Chart(ctxVote, {
+            type: 'bar',
+            data: {
+                labels: posLabels,
+                datasets: [{
+                    data: posData,
+                    backgroundColor: '#4f46e5',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { grid: { color: '#2d2f39' } } }
+            }
+        });
+    }
+
+    // Signup Progress Chart
+    const ctxReg = document.getElementById('regChart');
+    if (ctxReg) {
+        new Chart(ctxReg, {
+            type: 'doughnut',
+            data: {
+                labels: ['Registered', 'Pending'],
+                datasets: [{
+                    data: [registeredCount, pendingCount],
+                    backgroundColor: ['#10b981', '#2d2f39'],
+                    borderWidth: 0
+                }]
+            },
+            options: { cutout: '80%' }
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Manage Students{% endblock %}
+{% block page_title %}Student Management{% endblock %}
+
+{% block content %}
+<!-- FORMS SECTION -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+    
+    <!-- LEFT: MANUAL ADD -->
+    <div class="card p-8">
+        <h2 class="text-xl font-bold mb-6 text-white"><i class="fas fa-user-plus mr-2 text-indigo-500"></i> Add Student Manually</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Registration Number</label>
+                    <input type="text" name="registration_number" class="input-style" placeholder="e.g. 076BCT001" required>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Full Name</label>
+                    <input type="text" name="full_name" class="input-style" placeholder="e.g. Rahul Joshi" required>
+                </div>
+                <button type="submit" name="manual_add" class="w-full bg-indigo-600 hover:bg-indigo-700 py-3 rounded-xl font-bold transition">
+                    Save Student
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- RIGHT: BULK CSV UPLOAD -->
+    <div class="card p-8">
+        <h2 class="text-xl font-bold mb-6 text-white"><i class="fas fa-file-csv mr-2 text-green-500"></i> Bulk Upload (CSV)</h2>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="border-2 border-dashed border-gray-700 rounded-2xl p-10 text-center mb-6 hover:border-indigo-500 transition cursor-pointer" onclick="document.getElementById('csv_file').click()">
+                <input type="file" name="file" id="csv_file" class="hidden" required>
+                <i class="fas fa-cloud-upload-alt text-4xl text-gray-600 mb-4"></i>
+                <p class="text-gray-400">Click to select CSV File</p>
+                <p class="text-xs text-gray-600 mt-2">Format: reg_number, full_name</p>
+            </div>
+            <button type="submit" name="bulk_upload" class="w-full bg-emerald-600 hover:bg-emerald-700 py-3 rounded-xl font-bold transition">
+                Import All Students
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- STUDENT LIST TABLE -->
+<div class="card overflow-hidden">
+    <div class="p-6 border-b border-gray-800 flex justify-between items-center">
+        <h3 class="font-bold text-lg text-white">Authorized Student List</h3>
+    </div>
+    <table class="w-full text-left">
+        <thead class="bg-gray-800/40 text-gray-400 text-sm">
+            <tr>
+                <th class="p-5">Reg Number</th>
+                <th class="p-5">Full Name</th>
+                <th class="p-5">Signup Status</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800">
+            {% for s in students %}
+            <tr class="hover:bg-white/5 transition">
+                <td class="p-5 font-mono text-indigo-400">{{ s.registration_number }}</td>
+                <td class="p-5 font-medium">{{ s.full_name }}</td>
+                <td class="p-5">
+                    {% if s.is_registered %}
+                    <span class="text-emerald-500 flex items-center text-sm"><i class="fas fa-check-circle mr-2"></i> Registered</span>
+                    {% else %}
+                    <span class="text-gray-500 flex items-center text-sm"><i class="fas fa-clock mr-2"></i> Pending Signup</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

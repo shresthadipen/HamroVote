@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}My Blog{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
+      integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=MuseoModerno:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/base.css' %}" />
+
+    <script type="text/javascript">
+      var user = "{{request.user}}";
+    </script>
+
+    {% block extra_css %} {% endblock %}
+  </head>
+  <body>
+    <header class="navbar">
+      <a href="{% url 'home' %}" style="text-decoration: none; color: #7e7a72">
+        <div class="logo">ElectroDeals</div>
+      </a>
+      <nav>
+        <ul>
+          <li><a href="{% url 'home' %}">Home</a></li>
+          <li><a href="{% url 'product_list' %}">Product</a></li>
+          <li><a href="{% url 'about_us' %}">About Us</a></li>
+        </ul>
+      </nav>
+      <div class="icons">
+        <form action="{% url 'search_products' %}" method="get">
+        <div class="search-box">
+          <input type="text" name="query" id="search-input" placeholder="Search..." autocomplete="on" value="{{ request.GET.query }}">
+            <button type="submit" class="search-btn">
+                <img src="{% static 'img/search.png' %}" alt="Search" class="search-icon" />
+            </button>
+          </div>
+        </form>
+      
+        <a href="{% url 'cart' %}" class="cart">
+          <img src="{% static 'img/cart.png' %}" alt="cart-icon" class="icon">
+          <span class="cart-counter">{{ cartItems }}</span>
+        </a>
+
+        {% if user.is_authenticated %}
+        <div class="dropdown">
+          <img src="{% static 'img/user.png' %}" alt="user-icon" class="icon">
+          
+          <div class="dropdown-content">
+              <a href="{% url 'profile' %}" style="text-decoration: none;">{{ user.username|capfirst }}</a>
+              <a href="{% url 'order_history' %}" style="text-decoration: none;">Orders</a>
+              <a href="/logout/" style="text-decoration: none;">Logout</a>
+          </div>
+        </div>
+      
+        {% else %}
+        <button type="submit" class="auth-btn-home">
+          <a href="/signup/">Signup</a>
+        </button>
+        <button type="submit" class="auth-btn-home">
+          <a href="/login/">Login</a>
+        </button>
+        {% endif %}
+      </div>
+    </header>
+    <main>
+      {% block content %} {% endblock %}
+    </main>
+    
+
+    <footer>
+      <div class="container">
+        <div class="section">
+          <h3>Contact Info</h3>
+          <ul>
+            <li><a href="{% url 'about_us' %}">About Us</a></li>
+            <li>
+              <a href="{% url 'about_us' %}#contact-us-form"> Contact Us </a>
+            </li>
+          </ul>
+        </div>
+        <div class="section">
+          <h3>Categories</h3>
+          <ul>
+            <li>
+              <a href="{% url 'product_list' %}?category=Laptops">Laptops</a>
+            </li>
+            <li>
+              <a href="{% url 'product_list' %}?category=Smartphones"
+                >Smartphones</a
+              >
+            </li>
+            <li>
+              <a href="{% url 'product_list' %}?category=Earbuds">Earbuds</a>
+            </li>
+          </ul>
+        </div>
+        <div class="section">
+          <h3>Support</h3>
+          <ul>
+            <li><a href="#">FAQ</a></li>
+            <li><a href="#">Help Center</a></li>
+          </ul>
+        </div>
+        <div class="section">
+          <h3>Payments</h3>
+          <ul>
+            <li><a href="#">Credit Cards</a></li>
+            <li><a href="#">PayPal</a></li>
+            <li><a href="#">Bank Transfer</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="line">
+        <hr class="weak-line" />
+      </div>
+      <div class="footer-bottom">
+        <p class="copyright">© 2024 ElectroDeals. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="#">Privacy Policy</a>
+          <span class="separator">|</span>
+          <a href="#">Terms</a>
+          <span class="separator">|</span>
+          <a href="#">Support</a>
+        </div>
+      </div>
+    </footer>
+    <script src="{% static 'js/script.js' %}"></script>
+
+    {% block extra_js %} {% endblock %}
+  </body>
+</html>

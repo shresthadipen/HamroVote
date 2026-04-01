@@ -1,0 +1,86 @@
+{% extends 'voter/base.html' %}
+
+{% block title %}Voting Booth - HamroVote{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Welcome Header & Progress -->
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mb-10 md:flex items-center justify-between">
+        <div class="mb-6 md:mb-0">
+            <h1 class="text-3xl font-bold text-gray-900">Welcome, {{ user.first_name|default:user.username }}! 👋</h1>
+            <p class="text-gray-500 mt-1">Make your voice heard. Cast your votes for the student council.</p>
+        </div>
+        
+        <!-- Progress Tracker -->
+        <div class="bg-blue-50 rounded-2xl p-6 border border-blue-100 min-w-[280px]">
+            <div class="flex justify-between items-end mb-2">
+                <span class="text-sm font-bold text-blue-700">Your Progress</span>
+                <span class="text-2xl font-black text-blue-700">{{ voted_count }}<span class="text-sm font-medium text-blue-400">/{{ total_positions }}</span></span>
+            </div>
+            <div class="w-full bg-blue-200 rounded-full h-2">
+                <div class="bg-blue-600 h-2 rounded-full transition-all duration-1000" style="width: {% widthratio voted_count total_positions 100 %}%"></div>
+            </div>
+            <p class="text-[10px] text-blue-500 mt-2 uppercase font-bold tracking-wider">
+                {% if voted_count == total_positions %} All votes cast! Thank you. {% else %} Positions remaining to vote {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Positions Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for pos in positions %}
+        <div class="group relative bg-white rounded-3xl border border-gray-100 p-1 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            
+            <!-- Status Badge -->
+            <div class="absolute top-6 right-6 z-10">
+                {% if pos.id in voted_position_ids %}
+                    <div class="bg-emerald-100 text-emerald-600 p-2 rounded-full shadow-sm">
+                        <i class="fas fa-check-circle text-lg"></i>
+                    </div>
+                {% else %}
+                    <div class="bg-blue-50 text-blue-400 p-2 rounded-full">
+                        <i class="fas fa-circle-notch text-lg"></i>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="p-6">
+                <!-- Icon/Decoration -->
+                <div class="w-14 h-14 {% if pos.id in voted_position_ids %}bg-gray-50 text-gray-300{% else %}bg-indigo-50 text-indigo-600{% endif %} rounded-2xl flex items-center justify-center mb-6 transition-colors">
+                    <i class="fas fa-id-badge text-2xl"></i>
+                </div>
+
+                <h3 class="text-xl font-bold {% if pos.id in voted_position_ids %}text-gray-400{% else %}text-gray-900{% endif %} mb-2">
+                    {{ pos.title }}
+                </h3>
+                
+                <div class="flex items-center text-sm text-gray-400 mb-8">
+                    <i class="fas fa-users mr-2"></i>
+                    <span>{{ pos.candidates.count }} Candidates</span>
+                </div>
+
+                <!-- Action Button -->
+                {% if pos.id in voted_position_ids %}
+                    <div class="w-full py-3 px-4 bg-gray-50 text-gray-400 rounded-xl font-bold text-center text-sm border border-gray-100">
+                        Vote Recorded
+                    </div>
+                {% else %}
+                    <a href="{% url 'voter:candidates' pos.id %}" 
+                       class="block w-full py-3 px-4 bg-indigo-600 text-white rounded-xl font-bold text-center text-sm hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all">
+                        View Candidates
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Info Footer -->
+    <div class="mt-16 text-center bg-gray-100/50 rounded-3xl p-8 border border-dashed border-gray-200">
+        <i class="fas fa-shield-alt text-gray-300 text-3xl mb-4"></i>
+        <p class="text-gray-500 text-sm max-w-lg mx-auto">
+            Your votes are encrypted and anonymous. Once you confirm a vote, it cannot be changed to ensure election integrity.
+        </p>
+    </div>
+</div>
+{% endblock %}
