@@ -1,80 +1,97 @@
 {% extends 'voter/base.html' %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto py-8">
+<div class="max-w-6xl mx-auto py-10 px-4">
     
     <div class="mb-12">
-        <h1 class="text-3xl font-black text-gray-900">Voting Booth</h1>
-        <p class="text-gray-500">Select a category below to cast your vote.</p>
+        <h1 class="text-3xl font-black text-gray-900 tracking-tight">Election Portal</h1>
+        <p class="text-gray-500 mt-1">Welcome, {{ user.first_name|default:user.username }}.</p>
     </div>
 
-    {% for election in elections %}
-    <!-- ELECTION GROUP -->
+    <!-- 1. RUNNING ELECTIONS -->
     <div class="mb-16">
-        
-        <!-- Election Label (The "Election" text from your sketch) -->
-        <div class="flex items-center gap-4 mb-6">
-            <h2 class="text-xl font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100">
-                <i class="fas fa-vote-yea mr-2"></i> {{ election.title }}
-            </h2>
-            <div class="h-[1px] flex-1 bg-gray-200"></div>
-            <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                Status: {{ election.status }}
-            </span>
+        <div class="flex items-center gap-4 mb-8">
+            <h2 class="text-sm font-black text-indigo-600 uppercase tracking-[0.2em]">Running</h2>
+            <div class="h-[1px] flex-1 bg-gradient-to-r from-indigo-100 to-transparent"></div>
         </div>
 
-        <!-- POSITIONS GRID (The cards from your sketch) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {% for pos in election.positions.all %}
-            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all p-6 relative overflow-hidden">
-                
-                <!-- Status indicator -->
-                {% if pos.id in voted_position_ids %}
-                    <div class="absolute top-0 right-0 bg-emerald-500 text-white px-3 py-1 rounded-bl-xl text-[10px] font-bold">
-                        VOTED
-                    </div>
-                {% endif %}
-
-                <div class="w-10 h-10 bg-gray-50 text-indigo-500 rounded-lg flex items-center justify-center mb-4">
-                    <i class="fas fa-user-tie"></i>
-                </div>
-
-                <h3 class="text-lg font-bold text-gray-800">{{ pos.title }}</h3>
-                <p class="text-xs text-gray-400 mt-1 mb-6">Click to see {{ pos.candidates.count }} candidates</p>
-
-                <!-- Action Logic -->
-                {% if election.status == 'Running' %}
-                    {% if pos.id in voted_position_ids %}
-                        <div class="w-full py-3 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-center text-xs border border-emerald-100">
-                           <i class="fas fa-check-circle mr-1"></i> Recorded
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for e in elections %}
+                {% if e.status == 'Running' %}
+                <div class="bg-white rounded-3xl border border-gray-100 p-1 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300">
+                    <div class="p-7">
+                        <div class="flex justify-between items-start mb-6">
+                            <!-- Removed hover bg color change here -->
+                            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-vote-yea text-xl"></i>
+                            </div>
+                            <span class="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">{{ e.status }}</span>
                         </div>
-                    {% else %}
-                        <a href="{% url 'voter:candidates' pos.id %}" 
-                           class="block w-full py-3 bg-indigo-600 text-white text-center rounded-xl font-bold text-xs hover:bg-indigo-700 transition">
-                            Vote Now
-                        </a>
-                    {% endif %}
-                {% elif election.status == 'Upcoming' %}
-                    <button disabled class="w-full py-3 bg-gray-100 text-gray-400 rounded-xl font-bold text-xs cursor-not-allowed">
-                        Waiting for Start
-                    </button>
-                {% else %}
-                    <button disabled class="w-full py-3 bg-red-50 text-red-300 rounded-xl font-bold text-xs cursor-not-allowed">
-                        Election Closed
-                    </button>
+
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">{{ e.title }}</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-8 line-clamp-2">{{ e.description }}</p>
+                        
+                        <div class="flex items-center justify-between pt-6 border-t border-gray-50">
+                            <div class="text-[10px] font-bold text-gray-400 uppercase">
+                                <i class="far fa-clock mr-1 text-indigo-400"></i> Ends {{ e.end_date|time }}
+                            </div>
+                            <a href="{% url 'voter:election_ballot' e.id %}" 
+                               class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-95">
+                                Enter Booth
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 {% endif %}
-            </div>
             {% endfor %}
         </div>
     </div>
-    {% empty %}
-    <!-- If no elections are assigned to this student -->
-    <div class="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-        <i class="fas fa-user-lock text-4xl text-gray-300 mb-4"></i>
-        <h2 class="text-xl font-bold text-gray-400">Not Authorized</h2>
-        <p class="text-gray-400 text-sm">Your registration number is not on the authorized list for any current elections.</p>
-    </div>
-    {% endfor %}
 
+    <!-- 2. UPCOMING & CLOSED -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div>
+            <h2 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Upcoming</h2>
+            <div class="space-y-4">
+                {% for e in elections %}
+                    {% if e.status == 'Upcoming' %}
+                    <div class="bg-white p-5 rounded-2xl border border-gray-100 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-calendar-day text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-sm">{{ e.title }}</h4>
+                                <p class="text-[10px] text-gray-400 font-medium">Starts: {{ e.start_date|date:"M d, H:i" }}</p>
+                            </div>
+                        </div>
+                        <span class="text-[9px] font-bold bg-amber-50 text-amber-600 px-2 py-1 rounded-lg uppercase">{{ e.status }}</span>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div>
+            <h2 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Closed</h2>
+            <div class="space-y-4">
+                {% for e in elections %}
+                    {% if e.status == 'Closed' %}
+                    <div class="bg-gray-50/50 p-5 rounded-2xl border border-transparent flex items-center justify-between">
+                        <div class="flex items-center gap-4 opacity-60">
+                            <div class="w-10 h-10 bg-gray-200 text-gray-500 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-archive text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-700 text-sm">{{ e.title }}</h4>
+                                <p class="text-[10px] text-gray-400">Finalized {{ e.end_date|date:"M d" }}</p>
+                            </div>
+                        </div>
+                        <span class="text-[9px] font-bold bg-gray-200 text-gray-500 px-2 py-1 rounded-lg uppercase">{{ e.status }}</span>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

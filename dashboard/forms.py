@@ -14,7 +14,6 @@ class ElectionForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(attrs={'class': 'input-style', 'placeholder': 'e.g. Student Council 2024'}),
             'description': forms.Textarea(attrs={'class': 'input-style', 'rows': 3}),
-            # Use datetime-local so the browser shows a calendar/clock picker
             'start_date': forms.DateTimeInput(attrs={'class': 'input-style', 'type': 'datetime-local'}),
             'end_date': forms.DateTimeInput(attrs={'class': 'input-style', 'type': 'datetime-local'}),
         }
@@ -22,4 +21,5 @@ class ElectionForm(forms.ModelForm):
 class CandidateForm(forms.ModelForm):
     class Meta:
         model = Candidate
-        fields = ['position', 'name', 'bio', 'manifesto', 'photo', 'grade', 'section']
+        # Grade and Section REMOVED to match your database
+        fields = ['position', 'name', 'bio', 'manifesto', 'photo']

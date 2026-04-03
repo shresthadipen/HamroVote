@@ -1,129 +1,76 @@
-<!-- voter/templates/voter/results.html -->
 {% extends 'voter/base.html' %}
 
-{% block title %}Results - HamroVote{% endblock %}
-
 {% block content %}
-<div class="max-w-4xl mx-auto">
-    <!-- Header -->
-    <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-2">Election Results</h1>
-        <p class="text-gray-600">Live results as of March 13, 2024, 10:30 AM</p>
+<div class="max-w-5xl mx-auto py-10 px-4">
+    
+    <div class="mb-12">
+        <h1 class="text-3xl font-bold text-gray-900">Election Results</h1>
+        <p class="text-gray-500">Real-time vote tallies and finalized winners.</p>
     </div>
 
-    <!-- Results Summary -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div class="bg-white rounded-xl shadow-md p-4 text-center">
-            <p class="text-gray-500 text-sm">Total Voters</p>
-            <p class="text-2xl font-bold text-blue-600">1,247</p>
+    {% for data in results_data %}
+    <div class="mb-16">
+        <!-- Election Header -->
+        <div class="flex items-center justify-between mb-6 pb-2 border-b border-gray-100">
+            <h2 class="text-xl font-bold text-gray-800">{{ data.election.title }}</h2>
+            <span class="text-[10px] font-bold uppercase px-3 py-1 rounded border 
+                {% if data.status == 'running' %}border-green-200 text-green-600 bg-green-50
+                {% else %}border-gray-200 text-gray-500 bg-gray-50{% endif %}">
+                {{ data.status }}
+            </span>
         </div>
-        <div class="bg-white rounded-xl shadow-md p-4 text-center">
-            <p class="text-gray-500 text-sm">Votes Cast</p>
-            <p class="text-2xl font-bold text-green-600">892</p>
-        </div>
-        <div class="bg-white rounded-xl shadow-md p-4 text-center">
-            <p class="text-gray-500 text-sm">Turnout</p>
-            <p class="text-2xl font-bold text-purple-600">72%</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {% for item in data.positions %}
+            <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">{{ item.position.title }}</h3>
+
+                <div class="space-y-6">
+                    {% for c in item.candidates %}
+                    <div class="relative">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-gray-800 text-sm">{{ c.name }}</span>
+                                
+                                <!-- SIMPLE WINNER LOGIC -->
+                                {% if c == item.top_candidate %}
+                                    {% if data.status == 'closed' %}
+                                        <span class="text-[9px] font-bold text-emerald-600 uppercase tracking-tighter bg-emerald-50 px-2 py-0.5 rounded">Winner</span>
+                                    {% else %}
+                                        <span class="text-[9px] font-bold text-indigo-600 uppercase tracking-tighter bg-indigo-50 px-2 py-0.5 rounded">Leading</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            <span class="text-xs font-bold text-gray-500">{{ c.vote_count }}</span>
+                        </div>
+
+                        <!-- SIMPLE PROGRESS BAR -->
+                        <div class="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-700
+                                {% if c == item.top_candidate %}
+                                    {% if data.status == 'closed' %}bg-emerald-500{% else %}bg-indigo-500{% endif %}
+                                {% else %}
+                                    bg-gray-300
+                                {% endif %}"
+                                 style="width: {% if item.total_votes > 0 %}{% widthratio c.vote_count item.total_votes 100 %}{% else %}0{% endif %}%">
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-6 pt-4 border-t border-gray-50 text-right">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase">Total Cast: {{ item.total_votes }}</p>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </div>
-
-    <!-- Results by Position -->
-    <div class="space-y-6">
-        <!-- Class President -->
-        <div class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-                <h2 class="text-xl font-bold text-white">Class President</h2>
-            </div>
-            <div class="p-6">
-                <div class="space-y-4">
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="font-medium">Rahul Joshi</span>
-                            <span>524 votes (42%)</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-blue-600 h-3 rounded-full" style="width: 42%"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="font-medium">Sita Bhandari</span>
-                            <span class="font-semibold text-green-600">723 votes (58%)</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-green-600 h-3 rounded-full" style="width: 58%"></div>
-                        </div>
-                        <p class="text-xs text-green-600 mt-1">
-                            <i class="fas fa-crown mr-1"></i> Winner
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Vice President -->
-        <div class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
-                <h2 class="text-xl font-bold text-white">Vice President</h2>
-            </div>
-            <div class="p-6">
-                <div class="space-y-4">
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="font-medium">Prakash Gurung</span>
-                            <span class="font-semibold text-green-600">811 votes (65%)</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-green-600 h-3 rounded-full" style="width: 65%"></div>
-                        </div>
-                        <p class="text-xs text-green-600 mt-1">
-                            <i class="fas fa-crown mr-1"></i> Winner
-                        </p>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="font-medium">Maya Tamang</span>
-                            <span>436 votes (35%)</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-gray-400 h-3 rounded-full" style="width: 35%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Secretary -->
-        <div class="bg-white rounded-xl shadow-md overflow-hidden">
-            <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
-                <h2 class="text-xl font-bold text-white">Secretary</h2>
-            </div>
-            <div class="p-6">
-                <div class="space-y-4">
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="font-medium">Priya Maharjan</span>
-                            <span class="font-semibold text-green-600">645 votes (52%)</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-green-600 h-3 rounded-full" style="width: 52%"></div>
-                        </div>
-                        <p class="text-xs text-green-600 mt-1">
-                            <i class="fas fa-crown mr-1"></i> Winner
-                        </p>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="font-medium">Sujan Tamang</span>
-                            <span>595 votes (48%)</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div class="bg-purple-400 h-3 rounded-full" style="width: 48%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    {% empty %}
+    <div class="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+        <p class="text-gray-400 italic">No elections available.</p>
     </div>
+    {% endfor %}
+
 </div>
 {% endblock %}

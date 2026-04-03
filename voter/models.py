@@ -1,11 +1,10 @@
-# voter/models.py
 from django.db import models
+from accounts.models import Voter
 from django.utils import timezone
-from accounts.models import Voter  # Import Voter from accounts
-
+ 
 class Election(models.Model):
     title = models.CharField(max_length=200)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     is_active = models.BooleanField(default=True)
@@ -14,11 +13,9 @@ class Election(models.Model):
     def __str__(self):
         return self.title
 
-    # --- THE TIME LOGIC ---
     @property
     def is_running(self):
         now = timezone.now()
-        # Election is running ONLY if: Start < Now < End AND is_active is True
         return self.start_date <= now <= self.end_date and self.is_active
 
     @property
@@ -32,14 +29,17 @@ class Election(models.Model):
             return "Closed"
         return "Running"
 
+    class Meta:
+        ordering = ['-start_date']
+
 class Position(models.Model):
     election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='positions')
-    title = models.CharField(max_length=100)  # e.g., "School Captain", "Vice Captain"
-    description = models.TextField(blank=True)
-    order = models.IntegerField(default=0)  # For ordering positions
+    title = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    order = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.title}"
+        return f"{self.title} ({self.election.title})"
 
     class Meta:
         ordering = ['order']
@@ -50,44 +50,34 @@ class Candidate(models.Model):
     bio = models.TextField()
     manifesto = models.TextField()
     photo = models.ImageField(upload_to='candidates/', blank=True, null=True)
-    grade = models.CharField(max_length=10, blank=True)
-    section = models.CharField(max_length=5, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.name} - {self.position.title}"
 
-    class Meta:
-        ordering = ['name']
+# ================= THE PRIVACY ALGORITHM MODELS =================
 
-class Vote(models.Model):
-    voter = models.ForeignKey(Voter, on_delete=models.CASCADE, related_name='votes')  # Using Voter from accounts
-    election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='votes')
+class ParticipationLedger(models.Model):
+    # Using the 'app_name.ModelName' string avoids NameErrors and Circular Imports
+    voter = models.ForeignKey('accounts.Voter', on_delete=models.CASCADE) 
     position = models.ForeignKey(Position, on_delete=models.CASCADE)
-    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
-    ip_address = models.GenericIPAddressField(blank=True, null=True)
     voted_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ['voter', 'election', 'position']  # One vote per position per voter
-        ordering = ['-voted_at']
+        unique_together = ['voter', 'position']
+
+class AnonymousBallot(models.Model):
+    """
+    ALGORITHM PART 2: The 'Secret Ballot'.
+    This table records the CHOICE made.
+    It links only to the Position and Candidate.
+    IT HAS NO LINK TO THE VOTER. It is mathematically anonymous.
+    """
+    election = models.ForeignKey(Election, on_delete=models.CASCADE)
+    position = models.ForeignKey(Position, on_delete=models.CASCADE)
+    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
+    voted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.voter.student.full_name} voted for {self.candidate.name}"
-    
-
-# voter/models.py
-
-class AuthorizedVoter(models.Model):
-    # This links an election to a registration number
-    election = models.ForeignKey(Election, on_delete=models.CASCADE, related_name='authorized_list')
-    registration_number = models.CharField(max_length=50)
-    full_name = models.CharField(max_length=100)
-
-    class Meta:
-        # Prevents adding the same student twice to the same election
-        unique_together = ['election', 'registration_number']
-
-    def __str__(self):
-        return f"{self.registration_number} for {self.election.title}"
+        return f"Secret vote for {self.candidate.name}"

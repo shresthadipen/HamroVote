@@ -1,18 +1,26 @@
-# voter/admin.py
 from django.contrib import admin
-from .models import Vote, Candidate, Position, Election
+from .models import Election, Position, Candidate, ParticipationLedger, AnonymousBallot
 
-class VoteAdmin(admin.ModelAdmin):
-    # We DO NOT include 'voter' here to maintain privacy
+# 1. Standard Registrations
+admin.site.register(Election)
+admin.site.register(Position)
+admin.site.register(Candidate)
+
+# 2. Participation Ledger (Admin can see WHO voted)
+@admin.register(ParticipationLedger)
+class ParticipationLedgerAdmin(admin.ModelAdmin):
+    list_display = ('voter', 'position', 'voted_at')
+    list_filter = ('position',)
+    search_fields = ('voter__user__username', 'voter__student__full_name')
+
+# 3. Anonymous Ballots (Admin can see the CHOICES, but they are anonymous)
+@admin.register(AnonymousBallot)
+class AnonymousBallotAdmin(admin.ModelAdmin):
     list_display = ('election', 'position', 'candidate', 'voted_at')
-    list_filter = ('election', 'position')
+    list_filter = ('election', 'position', 'candidate')
     
-    # Make it read-only so admin can't change votes
-    readonly_fields = ('voter', 'election', 'position', 'candidate', 'voted_at')
+    # Security: Make these records read-only in the admin panel 
+    # so no one can tamper with the results.
+    readonly_fields = ('election', 'position', 'candidate', 'voted_at')
 
     def has_add_permission(self, request): return False
-
-admin.site.register(Vote, VoteAdmin)
-admin.site.register(Candidate)
-admin.site.register(Position)
-admin.site.register(Election)

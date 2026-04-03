@@ -5,8 +5,9 @@ from django.contrib import messages
 from django.db.models import Count
 from django.utils import timezone
 from accounts.models import Student_list, Voter
-from voter.models import Election, Position, Candidate, Vote
+from voter.models import Election, Position, Candidate, ParticipationLedger, AnonymousBallot
 from .forms import StudentManualForm, ElectionForm, CandidateForm 
+
 
 # ================= 1. ANALYTICS (Home) =================
 @staff_member_required
@@ -14,13 +15,13 @@ def admin_dashboard(request):
     # Analytics Stats
     total_students = Student_list.objects.count()
     registered_voters = Voter.objects.count()
-    total_votes = Vote.objects.count()
+    total_votes = AnonymousBallot.objects.count() 
     
     # Calculate Turnout %
     turnout = round((total_votes / registered_voters * 100), 1) if registered_voters > 0 else 0
 
     # Privacy Algorithm: Get vote counts per position without voter names
-    positions = Position.objects.annotate(v_count=Count('vote'))
+    positions = Position.objects.annotate(v_count=Count('anonymousballot'))
     pos_labels = [p.title for p in positions]
     pos_data = [p.v_count for p in positions]
 
@@ -107,21 +108,16 @@ def manage_positions(request):
 @staff_member_required
 def manage_candidates(request):
     elections = Election.objects.all().order_by('-start_date')
-    candidates = Candidate.objects.select_related('position__election').all().order_by('-id')
-
+    
     if request.method == "POST" and 'add_candidate' in request.POST:
         pos_id = request.POST.get('position')
         name = request.POST.get('name')
-        grade = request.POST.get('grade')
-        section = request.POST.get('section')
         bio = request.POST.get('bio')
         manifesto = request.POST.get('manifesto')
         photo = request.FILES.get('photo')
 
-        # Get position object
         position = get_object_or_404(Position, id=pos_id)
         
-        # Create Candidate with ALL required fields
         Candidate.objects.create(
             position=position,
             name=name,
@@ -129,13 +125,11 @@ def manage_candidates(request):
             manifesto=manifesto,
             photo=photo
         )
-        messages.success(request, f"Candidate {name} registered for {position.title} ({position.election.title}).")
+        messages.success(request, f"Candidate {name} registered successfully.")
         return redirect('dashboard:manage_candidates')
 
-    return render(request, 'manage_candidates.html', {
-        'candidates': candidates,
-        'elections': elections,
-    })
+    return render(request, 'manage_candidates.html', {'elections': elections})
+
 # ================= 5. DELETE ACTIONS =================
 @staff_member_required
 def delete_candidate(request, candidate_id):
@@ -239,6 +233,5 @@ from voter.models import Position
 
 def get_positions_ajax(request):
     election_id = request.GET.get('election_id')
-    # Filter positions based on the election selected in the first dropdown
     positions = Position.objects.filter(election_id=election_id).values('id', 'title')
     return JsonResponse(list(positions), safe=False)

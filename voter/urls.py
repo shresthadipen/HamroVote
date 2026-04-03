@@ -10,4 +10,5 @@ urlpatterns = [
     path('candidate/<int:candidate_id>/', views.candidate_detail, name='candidate_detail'), # Match this
     path('vote/<int:candidate_id>/', views.vote_confirmation, name='vote'), # Match this
     path('results/', views.results, name='results'),
+    path('ballot/<int:election_id>/', views.election_ballot, name='election_ballot'),
 ]

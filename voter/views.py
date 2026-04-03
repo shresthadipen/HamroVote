@@ -3,24 +3,21 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
-from .models import Election, Position, Candidate, Vote
+from .models import AnonymousBallot, Election, Position, Candidate, ParticipationLedger
 from django.db.models import Count
 
 @login_required
 def voter_dashboard(request):
-    reg_no = request.user.username 
-    # Fetch elections where this student is on the authorized list
-    authorized_elections = Election.objects.filter(
-        authorized_list__registration_number=reg_no,
-        is_active=True
-    ).prefetch_related('positions').distinct().order_by('-start_date')
-
-    # Get IDs of positions the user already voted for
+    all_elections = Election.objects.filter(is_active=True).order_by('-start_date')
     voter_profile = request.user.voter
-    voted_position_ids = Vote.objects.filter(voter=voter_profile).values_list('position_id', flat=True)
+    
+    # Change 'VoterParticipation' to 'ParticipationLedger' here
+    voted_position_ids = ParticipationLedger.objects.filter(
+        voter=voter_profile
+    ).values_list('position_id', flat=True)
 
     return render(request, 'voter/dashboard.html', {
-        'elections': authorized_elections,
+        'elections': all_elections,
         'voted_position_ids': voted_position_ids
     })
 
@@ -39,97 +36,129 @@ def candidate_detail(request, candidate_id):
     candidate = get_object_or_404(Candidate, id=candidate_id)
     return render(request, 'voter/candidate_detail.html', {'candidate': candidate})
 
+from django.db import transaction
+
+from django.utils import timezone
 
 @login_required
 def vote_confirmation(request, candidate_id):
-    # 1. Fetch data
+    # 1. Fetch Candidate and relevant info
     candidate = get_object_or_404(Candidate, id=candidate_id)
     position = candidate.position
     election = position.election
-    
-    # 2. Authorization Check (Ensure user is a registered Voter)
-    try:
-        voter_profile = request.user.voter
-    except AttributeError:
-        messages.error(request, "You do not have a voter profile. Please contact the administrator.")
-        return redirect('voter:landing')
+    voter_profile = request.user.voter
 
-    # 3. Time Check (Using the Election model fields)
+    # 2. SECURITY: Check if the election is actually running
     if not election.is_running:
-        messages.error(request, f"Voting for '{election.title}' is currently closed.")
+        messages.error(request, f"Voting for {election.title} is currently closed.")
         return redirect('voter:voter_dashboard')
 
-    # 4. Anti-Fraud Check (Prevent double voting)
-    already_voted = Vote.objects.filter(
-        voter=voter_profile,
-        election=election,
+    # 3. SECURITY: Check Participation Ledger
+    already_voted = ParticipationLedger.objects.filter(
+        voter=voter_profile, 
         position=position
     ).exists()
 
-    # 5. Handle Post (The actual Voting process)
-    if request.method == "POST":
-        if already_voted:
-            messages.error(request, "Security Alert: You have already cast your vote for this position.")
-            return redirect('voter:voter_dashboard')
+    # 4. If already voted, redirect immediately (even on GET)
+    if already_voted:
+        messages.warning(request, f"You have already recorded your selection for {position.title}.")
+        return redirect('voter:voter_dashboard')
 
+    # 5. Handle POST (Official Vote Submission)
+    if request.method == "POST":
         try:
-            # Use atomic to ensure the vote is saved perfectly or not at all
             with transaction.atomic():
-                Vote.objects.create(
+                # ALGORITHM STEP 1: Record Participation (Identity)
+                ParticipationLedger.objects.create(
                     voter=voter_profile,
+                    position=position
+                )
+
+                # ALGORITHM STEP 2: Record Choice (Anonymous)
+                # No link to voter_profile here!
+                AnonymousBallot.objects.create(
                     election=election,
                     position=position,
-                    candidate=candidate,
-                    ip_address=request.META.get('REMOTE_ADDR') # Log IP for security auditing
+                    candidate=candidate
                 )
             
-            # Show the success page
+            # Show the success receipt
             return render(request, 'voter/vote_success.html', {
                 'candidate': candidate,
                 'voted_at': timezone.now()
             })
 
         except Exception as e:
-            messages.error(request, f"An error occurred while casting your vote: {e}")
+            # If database fails, rollback happens automatically due to atomic()
+            messages.error(request, "A technical error occurred. Your vote was not recorded. Please try again.")
             return redirect('voter:voter_dashboard')
 
-    # 6. Handle GET (The confirmation page UI)
+    # 6. Handle GET (Render the confirmation page)
     return render(request, 'voter/vote.html', {
         'candidate': candidate,
         'position': position,
-        'already_voted': already_voted
+        'election': election
     })
 
 @login_required
 def results(request):
-    election = Election.objects.filter(is_active=True).first()
-    positions = Position.objects.filter(election=election)
-    
-    # PRIVACY ALGORITHM: Aggregate counts only
+    # Fetch all elections that are not hidden (Disabled)
+    elections = Election.objects.exclude(is_active=False).order_by('-start_date')
     results_data = []
-    for pos in positions:
-        candidates = Candidate.objects.filter(position=pos).annotate(
-            vote_count=Count('vote')
-        ).order_by('-vote_count')
-        results_data.append({'position': pos, 'candidates': candidates})
 
-    return render(request, 'voter/results.html', {
-        'election': election,
-        'results_data': results_data
-    })
+    for election in elections:
+        positions_list = []
+        for pos in election.positions.all():
+            # Aggregate anonymous votes
+            candidates = Candidate.objects.filter(position=pos).annotate(
+                vote_count=Count('anonymousballot')
+            ).order_by('-vote_count')
+
+            # Identify the top candidate
+            top_candidate = candidates.first() if candidates.exists() and candidates.first().vote_count > 0 else None
+            total_votes = sum(c.vote_count for c in candidates)
+
+            positions_list.append({
+                'position': pos,
+                'candidates': candidates,
+                'total_votes': total_votes,
+                'top_candidate': top_candidate,
+            })
+
+        results_data.append({
+            'election': election,
+            'status': election.status.lower(), # 'running' or 'closed'
+            'positions': positions_list
+        })
+
+    return render(request, 'voter/results.html', {'results_data': results_data})
 
 def landing(request):
     return render(request, 'landing.html')
 
 @login_required
 def election_ballot(request, election_id):
-    # This page shows the Positions (President, VP) for the selected Election
+    # 1. Fetch the election
     election = get_object_or_404(Election, id=election_id)
+    
+    # 2. Safety Check: If election is disabled, don't show the ballot
+    if election.status == "Disabled":
+        messages.error(request, "This election event is currently hidden by the administrator.")
+        return redirect('voter:voter_dashboard')
+
+    # 3. Get all voting positions for this specific election
     positions = Position.objects.filter(election=election)
     
-    # Check what they already voted for in THIS election
-    voted_ids = Vote.objects.filter(voter=request.user.voter, election=election).values_list('position_id', flat=True)
+    # 4. PRIVACY ALGORITHM CHECK: 
+    # Use 'ParticipationLedger' to find which positions this user has already voted for.
+    # We follow the 'position__election' relationship to filter by this election.
+    voter_profile = request.user.voter
+    voted_ids = ParticipationLedger.objects.filter(
+        voter=voter_profile, 
+        position__election=election
+    ).values_list('position_id', flat=True)
 
+    # 5. Render the ballot page
     return render(request, 'voter/ballot.html', {
         'election': election,
         'positions': positions,
