@@ -1,0 +1,69 @@
+{% extends 'voter/base.html' %}
+
+{% block title %}Edit Profile - HamroVote{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-10">
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-xl p-8 md:p-12">
+        <div class="flex items-center gap-4 mb-10 pb-6 border-b border-gray-50">
+            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
+                <i class="fas fa-user-edit text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-black text-gray-900">Edit Profile</h1>
+                <p class="text-gray-400 text-xs uppercase tracking-widest font-bold">Update your personal details</p>
+            </div>
+        </div>
+
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- First Name -->
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 ml-1">First Name</label>
+                    <input type="text" name="first_name" value="{{ user.first_name }}" 
+                           class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" required>
+                </div>
+
+                <!-- Last Name -->
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 ml-1">Last Name</label>
+                    <input type="text" name="last_name" value="{{ user.last_name }}" 
+                           class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" required>
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 ml-1">Email Address</label>
+                <input type="email" name="email" value="{{ user.email }}" 
+                       class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" required>
+            </div>
+
+            <!-- Phone -->
+            <div>
+                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2 ml-1">Phone Number</label>
+                <input type="text" name="phone" value="{{ voter.phone }}" 
+                       class="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" required>
+            </div>
+
+            <!-- Registration Number (Locked) -->
+            <div class="bg-gray-50 p-4 rounded-xl border border-dashed border-gray-200">
+                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Registration Number (Locked)</label>
+                <p class="text-sm font-bold text-gray-400">{{ user.username }}</p>
+                <p class="text-[9px] text-gray-400 mt-1 italic">Contact admin to change your official Registration ID.</p>
+            </div>
+
+            <div class="pt-6 flex flex-col gap-3">
+                <button type="submit" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95">
+                    Save Changes
+                </button>
+                <a href="{% url 'accounts:profile' %}" class="text-center py-2 text-xs text-gray-400 font-bold hover:text-gray-600 transition">
+                    Cancel and Go Back
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

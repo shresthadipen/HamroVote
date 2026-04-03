@@ -107,18 +107,18 @@
                         
                         <!-- Menu Items -->
                         <div class="py-2">
-                            <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
-                                <i class="fas fa-user-circle w-6 text-blue-500 text-lg"></i>
-                                <span class="flex-1">My Profile</span>
-                            </a>
-                            <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
-                                <i class="fas fa-pen w-6 text-green-500 text-lg"></i>
-                                <span class="flex-1">Edit Profile</span>
-                            </a>
-                            <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
-                                <i class="fas fa-lock w-6 text-purple-500 text-lg"></i>
-                                <span class="flex-1">Change Password</span>
-                            </a>
+                            <a href="{% url 'accounts:profile' %}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+        <i class="fas fa-user-circle w-6 text-blue-500 text-lg"></i>
+        <span class="flex-1">My Profile</span>
+    </a>
+                             <a href="{% url 'accounts:edit_profile' %}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+        <i class="fas fa-pen w-6 text-green-500 text-lg"></i>
+        <span class="flex-1">Edit Profile</span>
+    </a>
+                           <a href="{% url 'accounts:change_password' %}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+        <i class="fas fa-lock w-6 text-purple-500 text-lg"></i>
+        <span class="flex-1">Change Password</span>
+    </a>
                         </div>
                         
                         

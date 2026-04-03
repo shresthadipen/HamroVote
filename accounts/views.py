@@ -129,3 +129,67 @@ def logout_view(request):
     logout(request)
     messages.success(request, "Logged out successfully")
     return redirect("voter:landing")
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib import messages
+from voter.models import ParticipationLedger
+
+@login_required
+def profile_view(request):
+    # Fetch participation stats for this voter
+    voter_profile = request.user.voter
+    # Count how many unique positions this student has voted in
+    total_votes_cast = ParticipationLedger.objects.filter(voter=voter_profile).count()
+    
+    context = {
+        'voter': voter_profile,
+        'total_votes_cast': total_votes_cast,
+    }
+    return render(request, 'profile.html', context)
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            # This keeps the user logged in after the password change
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('accounts:profile')
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'change_password.html', {'form': form})
+
+
+@login_required
+def edit_profile(request):
+    user = request.user
+    voter = user.voter  # Access the related Voter profile
+
+    if request.method == "POST":
+        # Get data from the form
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+
+        # Update User model
+        user.first_name = first_name
+        user.last_name = last_name
+        user.email = email
+        user.save()
+
+        # Update Voter model (phone field)
+        voter.phone = phone
+        voter.save()
+
+        messages.success(request, "Your profile has been updated successfully!")
+        return redirect('accounts:profile')
+
+    return render(request, 'edit_profile.html', {'voter': voter})

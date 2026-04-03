@@ -1,0 +1,91 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Admin Results{% endblock %}
+{% block page_title %}Election Audit & Results{% endblock %}
+
+{% block content %}
+<div class="w-full px-2 space-y-12">
+
+    {% for data in results_data %}
+    <div class="space-y-4">
+        <!-- Election Header -->
+        <div class="flex items-center gap-4 px-2">
+            <h2 class="text-lg font-bold text-indigo-400">{{ data.election.title }}</h2>
+            <div class="h-[1px] flex-1 bg-gray-800"></div>
+            <span class="text-[9px] font-bold px-3 py-1 rounded-full bg-gray-800 text-gray-400 uppercase tracking-widest">
+                {{ data.election.status }}
+            </span>
+        </div>
+
+        <!-- Position Tables -->
+        <div class="space-y-6">
+            {% for item in data.positions %}
+            <div class="card overflow-hidden border-l-4 {% if data.status == 'closed' %}border-emerald-500{% endif %}">
+                
+                <!-- Table Header info bar -->
+                <div class="p-4 bg-gray-800/30 flex justify-between items-center border-b border-gray-800">
+                    <h3 class="font-bold text-white uppercase tracking-widest text-xs">{{ item.position.title }}</h3>
+                    <div class="text-[9px] font-black text-gray-500 uppercase">
+                        Voter Turnout: <span class="text-indigo-400">{{ item.turnout }}</span> / {{ total_students }}
+                    </div>
+                </div>
+                
+                <table class="w-full text-left border-collapse table-fixed">
+                    <thead class="text-[10px] text-gray-500 uppercase font-black bg-gray-900/50">
+                        <tr>
+                            <!-- FIXED WIDTHS FOR ALIGNMENT -->
+                            <th class="p-4 w-1/3">Candidate</th>
+                            <th class="p-4 w-32 text-center">Vote Count</th>
+                            <th class="p-4">Percentage</th>
+                            <th class="p-4 w-32 text-right">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-800">
+                        {% for c in item.candidates %}
+                        <tr class="hover:bg-white/5 transition">
+                            <!-- 1. Candidate Info -->
+                            <td class="p-4 truncate">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-7 h-7 rounded bg-gray-800 overflow-hidden flex-shrink-0">
+                                        {% if c.photo %}<img src="{{ c.photo.url }}" class="w-full h-full object-cover">{% endif %}
+                                    </div>
+                                    <span class="font-bold text-gray-200 text-xs truncate">{{ c.name }}</span>
+                                </div>
+                            </td>
+
+                            <!-- 2. Vote Count (Strictly Center-Aligned) -->
+                            <td class="p-4 text-center font-mono text-indigo-400 font-black text-sm">
+                                {{ c.vote_count }}
+                            </td>
+
+                            <!-- 3. Percentage Bar -->
+                            <td class="p-4">
+                                <div class="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
+                                    <div class="bg-indigo-500 h-full rounded-full" style="width: {% if item.turnout > 0 %}{% widthratio c.vote_count item.turnout 100 %}{% else %}0{% endif %}%"></div>
+                                </div>
+                            </td>
+
+                            <!-- 4. Dynamic Status (Leading vs Winner) -->
+                            <td class="p-4 text-right">
+                                {% if c == item.winner %}
+                                    {% if data.election.status == "Closed" %}
+                                        <span class="text-[9px] font-black text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded uppercase tracking-tighter">Winner</span>
+                                    {% else %}
+                                        <span class="text-[9px] font-black text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded uppercase tracking-tighter">Leading</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-[9px] font-bold text-gray-700 uppercase tracking-tighter">---</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}

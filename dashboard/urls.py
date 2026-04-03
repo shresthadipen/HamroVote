@@ -20,4 +20,6 @@ urlpatterns = [
     path('elections/', views.manage_elections, name='manage_elections'),
 path('elections/edit/<int:pk>/', views.edit_election, name='edit_election'),
 path('ajax/get-positions/', views.get_positions_ajax, name='get_positions_ajax'),
+ path('election-results/', views.election_results, name='admin_results'),
+
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

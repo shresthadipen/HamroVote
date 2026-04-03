@@ -1,33 +1,74 @@
 {% extends 'voter/base.html' %}
-{% block content %}
-<div class="max-w-4xl mx-auto">
-    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-        <div class="md:flex">
-            <div class="md:w-1/3 h-64 md:h-auto bg-gray-200">
-                {% if candidate.photo %}<img src="{{ candidate.photo.url }}" class="w-full h-full object-cover">{% endif %}
-            </div>
-            <div class="p-8 md:w-2/3">
-                <span class="text-indigo-600 font-bold text-xs uppercase">{{ candidate.position.title }}</span>
-                <h1 class="text-4xl font-bold text-gray-900 mt-2">{{ candidate.name }}</h1>
-                <p class="text-gray-500">Grade {{ candidate.grade }} • Section {{ candidate.section }}</p>
-                
-                <div class="mt-8">
-                    <h3 class="font-bold text-gray-800 border-b pb-2">Biography</h3>
-                    <p class="mt-3 text-gray-600 leading-relaxed">{{ candidate.bio }}</p>
-                </div>
 
-                <div class="mt-8">
-                    <h3 class="font-bold text-gray-800 border-b pb-2">Election Manifesto</h3>
-                    <p class="mt-3 text-gray-600 leading-relaxed bg-blue-50 p-6 rounded-xl italic">
-                        "{{ candidate.manifesto }}"
+{% block title %}{{ candidate.name }} - Profile{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-12 px-4">
+    
+    <!-- Navigation / Breadcrumbs -->
+    <div class="mb-8">
+        <a href="{% url 'voter:candidates' candidate.position.id %}" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold flex items-center transition">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Candidate List
+        </a>
+    </div>
+
+    <!-- Main Profile Card -->
+    <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col md:flex-row">
+        
+        <!-- Left: Image Section -->
+        <div class="md:w-2/5 relative h-80 md:h-auto bg-slate-100">
+            {% if candidate.photo %}
+                <img src="{{ candidate.photo.url }}" class="w-full h-full object-cover" alt="{{ candidate.name }}">
+            {% else %}
+                <div class="w-full h-full flex items-center justify-center text-slate-300">
+                    <i class="fas fa-user text-6xl"></i>
+                </div>
+            {% endif %}
+            
+            <!-- Floating Badge -->
+            <div class="absolute bottom-6 left-6">
+                <span class="bg-indigo-600 text-white text-[10px] font-black px-4 py-2 rounded-xl uppercase tracking-widest shadow-xl border border-white/20">
+                    {{ candidate.position.title }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Right: Details Section -->
+        <div class="md:w-3/5 p-10 md:p-12">
+            <div class="mb-10">
+                <span class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] mb-2 block">Candidate Profile</span>
+                <h1 class="text-4xl font-black text-slate-900 leading-tight">{{ candidate.name }}</h1>
+            </div>
+
+            <!-- Bio Section -->
+            <div class="mb-10">
+                <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 pb-2 mb-4">About Candidate</h3>
+                <p class="text-slate-600 text-sm leading-relaxed italic">
+                    {{ candidate.bio|default:"No biography provided." }}
+                </p>
+            </div>
+
+            <!-- Manifesto Section (The Fancy Part) -->
+            <div class="mb-12">
+                <h3 class="text-[11px] font-black text-indigo-600 uppercase tracking-widest border-b border-indigo-50 pb-2 mb-4">Election Manifesto</h3>
+                <div class="relative bg-indigo-50/30 border-l-4 border-indigo-500 p-6 rounded-r-2xl">
+                    <i class="fas fa-quote-left absolute top-4 right-4 text-indigo-100 text-2xl"></i>
+                    <p class="text-slate-700 text-sm leading-loose font-medium relative z-10">
+                        {{ candidate.manifesto }}
                     </p>
                 </div>
+            </div>
 
-                <div class="mt-10">
-                    <a href="{% url 'voter:vote' candidate.id %}" class="inline-block bg-blue-600 text-white px-10 py-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition">
-                        Select this Candidate
-                    </a>
-                </div>
+            <!-- Final Action CTA -->
+            <div class="pt-6 border-t border-slate-50">
+                <a href="{% url 'voter:vote' candidate.id %}" 
+                   class="w-full inline-flex items-center justify-center gap-3 bg-indigo-600 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95">
+                    <i class="fas fa-check-to-slot"></i>
+                    Confirm Vote for {{ candidate.name }}
+                </a>
+                <p class="text-center text-[10px] text-slate-400 font-bold uppercase mt-4 tracking-tighter">
+                    Voting for {{ candidate.position.election.title }}
+                </p>
             </div>
         </div>
     </div>

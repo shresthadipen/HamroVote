@@ -235,3 +235,41 @@ def get_positions_ajax(request):
     election_id = request.GET.get('election_id')
     positions = Position.objects.filter(election_id=election_id).values('id', 'title')
     return JsonResponse(list(positions), safe=False)
+
+
+from django.db.models import Count
+from voter.models import Election, Position, Candidate, AnonymousBallot
+
+@staff_member_required
+def election_results(request):
+    elections = Election.objects.all().order_by('-start_date')
+    total_students = Student_list.objects.count()
+    
+    results_data = []
+    for election in elections:
+        pos_list = []
+        for pos in election.positions.all():
+            candidates = Candidate.objects.filter(position=pos).annotate(
+                vote_count=Count('anonymousballot')
+            ).order_by('-vote_count')
+
+            # Admin Detail: How many people actually finished voting for this position?
+            participation_count = ParticipationLedger.objects.filter(position=pos).count()
+            winner = candidates.first() if candidates.exists() and candidates.first().vote_count > 0 else None
+
+            pos_list.append({
+                'position': pos,
+                'candidates': candidates,
+                'turnout': participation_count,
+                'winner': winner
+            })
+
+        results_data.append({
+            'election': election,
+            'positions': pos_list
+        })
+
+    return render(request, 'admin_results.html', {
+        'results_data': results_data,
+        'total_students': total_students
+    })
