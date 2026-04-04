@@ -9,18 +9,29 @@ from voter.models import Election, Position, Candidate, ParticipationLedger, Ano
 from .forms import StudentManualForm, ElectionForm, CandidateForm 
 
 
-# ================= 1. ANALYTICS (Home) =================
+from django.db.models import Count
+from voter.models import ParticipationLedger, AnonymousBallot, Position, Election
+from accounts.models import Student_list, Voter
+
 @staff_member_required
 def admin_dashboard(request):
-    # Analytics Stats
+    # 1. Base Stats
     total_students = Student_list.objects.count()
     registered_voters = Voter.objects.count()
-    total_votes = AnonymousBallot.objects.count() 
     
-    # Calculate Turnout %
-    turnout = round((total_votes / registered_voters * 100), 1) if registered_voters > 0 else 0
+    # 2. Total Ballot Selections (Sum of all choices made in all categories)
+    total_votes_cast = AnonymousBallot.objects.count() 
 
-    # Privacy Algorithm: Get vote counts per position without voter names
+    # 3. ACTUAL TURNOUT LOGIC:
+    # Count how many UNIQUE voters have a record in the ParticipationLedger
+    actual_voter_count = ParticipationLedger.objects.values('voter').distinct().count()
+    
+    # Calculate Percentage: (Unique People who voted / Total People with accounts)
+    turnout = 0
+    if registered_voters > 0:
+        turnout = round((actual_voter_count / registered_voters) * 100, 1)
+
+    # 4. Chart Data
     positions = Position.objects.annotate(v_count=Count('anonymousballot'))
     pos_labels = [p.title for p in positions]
     pos_data = [p.v_count for p in positions]
@@ -28,7 +39,8 @@ def admin_dashboard(request):
     context = {
         'total_students': total_students,
         'registered_voters': registered_voters,
-        'total_votes': total_votes,
+        'total_votes': total_votes_cast,
+        'actual_voter_count': actual_voter_count, # New variable
         'turnout': turnout,
         'pos_labels': pos_labels,
         'pos_data': pos_data,
@@ -273,3 +285,12 @@ def election_results(request):
         'results_data': results_data,
         'total_students': total_students
     })
+
+
+@staff_member_required
+def delete_election(request, pk):
+    election = get_object_or_404(Election, pk=pk)
+    title = election.title
+    election.delete()
+    messages.warning(request, f"Election '{title}' and all its associated data have been deleted.")
+    return redirect('dashboard:manage_elections')

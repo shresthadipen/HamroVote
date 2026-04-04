@@ -1,4 +1,3 @@
-<!-- voter/templates/voter/base.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -7,175 +6,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}HamroVote{% endblock %}</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        * {
-            font-family: 'Poppins', sans-serif;
+        * { font-family: 'Poppins', sans-serif; }
+        
+        /* FIX 1: Prevent horizontal jump when scrollbar appears */
+        html {
+            scrollbar-gutter: stable;
         }
+
         .nav-link {
             position: relative;
             transition: all 0.3s ease;
+            color: #64748b;
+            font-weight: 500;
         }
-        .nav-link:hover {
-            color: #3b82f6;
-        }
-        .nav-link.active {
-            color: #3b82f6;
-            font-weight: 600;
-        }
+        .nav-link:hover, .nav-link.active { color: #4f46e5; }
         .nav-link.active::after {
             content: '';
             position: absolute;
             bottom: -4px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: #3b82f6;
-            border-radius: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px; height: 4px;
+            background-color: #4f46e5;
+            border-radius: 50%;
         }
-        .profile-icon {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        .profile-icon:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        .dropdown-menu {
-            animation: fadeIn 0.2s ease-out;
-        }
+        
+        .profile-icon { background-color: #4f46e5; transition: all 0.3s ease; cursor: pointer; }
+        .profile-icon:hover { background-color: #4338ca; transform: scale(1.05); }
+
+        .dropdown-menu { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
-    <!-- Top Navigation Bar -->
-    <nav class="bg-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
+<body class="bg-slate-50 min-h-screen flex flex-col">
+
+    <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-100">
+        <!-- FIX 2: Fixed width for Navbar Container -->
+        <div class="max-w-7xl mx-auto px-6 lg:px-10">
+            <div class="flex justify-between items-center h-20">
+                
                 <!-- Logo -->
-                <a href="{% url 'voter:voter_dashboard' %}" class="flex items-center space-x-2">
-                    <div class="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-vote-yea text-white text-sm"></i>
+                <a href="{% url 'voter:voter_dashboard' %}" class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <i class="fas fa-check-double text-white"></i>
                     </div>
-                    <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">HamroVote</span>
+                    <span class="text-2xl font-bold tracking-tighter text-slate-800 uppercase">HamroVote</span>
                 </a>
 
-                <!-- Navigation Links -->
-                <div class="hidden md:flex items-center space-x-1">
-                    <a href="{% url 'voter:voter_dashboard' %}" 
-                       class="nav-link px-4 py-2 text-gray-700 {% if request.resolver_match.url_name == 'voter_dashboard' %}active{% endif %}">
-                        <i class="fas fa-home mr-2"></i>Home
-                    </a>
-                    <a href="{% url 'voter:results' %}" 
-                       class="nav-link px-4 py-2 text-gray-700 {% if request.resolver_match.url_name == 'results' %}active{% endif %}">
-                        <i class="fas fa-chart-bar mr-2"></i>Results
-                    </a>
+                <!-- Nav Links -->
+                <div class="hidden md:flex items-center gap-10">
+                    <a href="{% url 'voter:voter_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'voter_dashboard' %}active{% endif %}">Dashboard</a>
+                    <a href="{% url 'voter:results' %}" class="nav-link {% if request.resolver_match.url_name == 'results' %}active{% endif %}">Results</a>
                 </div>
 
-                <!-- User Menu -->
+                <!-- User Dropdown -->
                 <div class="relative">
-                    <button onclick="toggleDropdown()" class="profile-icon w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold focus:outline-none">
+                    <button onclick="toggleDropdown()" id="profile-btn" class="profile-icon w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm focus:outline-none">
                         {{ user.first_name|default:user.username|first|upper }}
                     </button>
-                    
-                    <!-- Dropdown Menu -->
-                    <div id="profile-dropdown" class="dropdown-menu hidden absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl py-2 border z-50">
-                        <!-- User Info -->
-                        <div class="px-4 py-3 border-b bg-gradient-to-r from-blue-50 to-purple-50">
-                            <p class="font-semibold text-gray-800">{{ user.first_name|default:user.username }} {{ user.last_name }}</p>
-                            <p class="text-xs text-gray-500 mt-1">{{ user.email }}</p>
+                    <div id="profile-dropdown" class="dropdown-menu hidden absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl py-2 border border-gray-100 z-50">
+                        <div class="px-5 py-4 border-b border-gray-50">
+                            <p class="font-bold text-gray-800 truncate">{{ user.get_full_name|default:user.username }}</p>
+                            <p class="text-[10px] text-indigo-500 mt-1 uppercase font-bold tracking-widest">{{ user.username }}</p>
                         </div>
-                        
-                        <!-- Menu Items -->
-                        <div class="py-2">
-                            <a href="{% url 'accounts:profile' %}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
-        <i class="fas fa-user-circle w-6 text-blue-500 text-lg"></i>
-        <span class="flex-1">My Profile</span>
-    </a>
-                             <a href="{% url 'accounts:edit_profile' %}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
-        <i class="fas fa-pen w-6 text-green-500 text-lg"></i>
-        <span class="flex-1">Edit Profile</span>
-    </a>
-                           <a href="{% url 'accounts:change_password' %}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
-        <i class="fas fa-lock w-6 text-purple-500 text-lg"></i>
-        <span class="flex-1">Change Password</span>
-    </a>
+                        <div class="p-2 space-y-1">
+                            <a href="{% url 'accounts:profile' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition"><i class="far fa-user-circle"></i> My Profile</a>
+                            <a href="{% url 'accounts:edit_profile' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition"><i class="far fa-edit"></i> Edit Profile</a>
+                            <a href="{% url 'accounts:change_password' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition"><i class="fas fa-lock"></i> Change Password</a>
                         </div>
-                        
-                        
-                        <div class="border-t my-2"></div>
-                        
-                        <a href="{% url 'accounts:logout' %}" class="flex items-center px-4 py-3 text-red-600 hover:bg-red-50 transition">
-                            <i class="fas fa-sign-out-alt w-6 text-red-500 text-lg"></i>
-                            <span class="flex-1">Logout</span>
-                        </a>
+                        <div class="border-t border-gray-50 my-1 mx-4"></div>
+                        <div class="p-2">
+                            <a href="{% url 'accounts:logout' %}" class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 font-bold hover:bg-red-50 rounded-xl transition"><i class="fas fa-power-off"></i> Logout</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="flex-grow">
-        <!-- Messages -->
+    <!-- FIX 3: Unified Content Container -->
+    <main class="flex-grow w-full max-w-7xl mx-auto px-6 lg:px-10 py-10">
         {% if messages %}
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             {% for message in messages %}
-            <div class="p-4 rounded-lg mb-3 
-                {% if message.tags == 'success' %}bg-green-50 border-l-4 border-green-500 text-green-700
-                {% elif message.tags == 'error' %}bg-red-50 border-l-4 border-red-500 text-red-700
-                {% elif message.tags == 'warning' %}bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700
-                {% else %}bg-blue-50 border-l-4 border-blue-500 text-blue-700{% endif %}">
+            <div class="mb-6 p-4 rounded-xl text-sm font-semibold border {% if message.tags == 'success' %}bg-emerald-50 border-emerald-100 text-emerald-700{% else %}bg-rose-50 border-rose-100 text-rose-700{% endif %}">
                 {{ message }}
             </div>
             {% endfor %}
-        </div>
         {% endif %}
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            {% block content %}{% endblock %}
-        </div>
+        {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-white border-t mt-auto py-4">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
-            © 2024 HamroVote. All rights reserved.
-        </div>
+    <footer class="bg-white border-t border-gray-100 py-5 text-center">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em]">© 2025 HamroVote Systems</p>
     </footer>
 
     <script>
-        function toggleDropdown() {
-            const dropdown = document.getElementById('profile-dropdown');
-            dropdown.classList.toggle('hidden');
-        }
-
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('profile-dropdown');
-            const button = event.target.closest('.profile-icon');
-            
-            if (!button && dropdown && !dropdown.classList.contains('hidden')) {
-                dropdown.classList.add('hidden');
+        function toggleDropdown() { document.getElementById('profile-dropdown').classList.toggle('hidden'); }
+        window.onclick = function(event) {
+            if (!event.target.closest('#profile-btn')) {
+                const dropdown = document.getElementById('profile-dropdown');
+                if (dropdown && !dropdown.classList.contains('hidden')) { dropdown.classList.add('hidden'); }
             }
-        });
+        }
     </script>
 </body>
 </html>

@@ -3,12 +3,13 @@
 {% block title %}My Profile - HamroVote{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto py-12 px-4">
+<div class="max-w-6xl mx-auto py-10 px-4">
+
     
     <!-- Header Area -->
     <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 px-2">
         <div>
-            <h1 class="text-3xl font-black text-gray-900 tracking-tight">Voter Profile</h1>
+            <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Voter Profile</h1>
             <p class="text-gray-500 text-sm mt-1">Manage your student credentials and security settings.</p>
         </div>
         <div class="flex items-center gap-3">
@@ -35,7 +36,7 @@
         <div class="pt-16 p-10">
             <!-- Name & Status -->
             <div class="mb-10">
-                <h2 class="text-2xl font-black text-gray-900">{{ user.get_full_name }}</h2>
+                <h2 class="text-2xl font-bold text-gray-900">{{ user.get_full_name }}</h2>
                 <div class="flex items-center gap-2 mt-1">
                     <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                     <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Student Account</span>
@@ -47,7 +48,7 @@
                 
                 <!-- Left: Official Details -->
                 <div class="space-y-6">
-                    <h3 class="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em] border-b border-indigo-50 pb-2">Academic Info</h3>
+                    <h3 class="text-[11px] font-bold text-indigo-600 uppercase tracking-[0.2em] border-b border-indigo-50 pb-2">Academic Info</h3>
                     
                     <div class="flex items-start gap-4">
                         <div class="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400">
@@ -82,13 +83,13 @@
 
                 <!-- Right: Stats & Security -->
                 <div class="space-y-6">
-                    <h3 class="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em] border-b border-indigo-50 pb-2">System Activity</h3>
+                    <h3 class="text-[11px] font-bold text-indigo-600 uppercase tracking-[0.2em] border-b border-indigo-50 pb-2">System Activity</h3>
                     
                     <!-- Stats Card -->
                     <div class="bg-indigo-50/50 p-6 rounded-3xl border border-indigo-100 flex items-center justify-between">
                         <div>
-                            <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Votes Cast</p>
-                            <h4 class="text-4xl font-black text-indigo-600 mt-1">{{ total_votes_cast }}</h4>
+                            <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Votes Cast</p>
+                            <h4 class="text-4xl font-bold text-indigo-600 mt-1">{{ total_votes_cast }}</h4>
                         </div>
                         <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm">
                             <i class="fas fa-vote-yea text-xl"></i>
@@ -109,7 +110,7 @@
 
         <!-- Meta Footer -->
         <div class="bg-gray-50/50 px-10 py-4 border-t border-gray-100 flex justify-between">
-            <span class="text-[10px] font-bold text-gray-400 uppercase">HamroVote Security Protocol v1.0</span>
+            <span class="text-[10px] font-bold text-gray-400 uppercase">HamroVote Security Protocol</span>
             <span class="text-[10px] font-bold text-gray-400 uppercase italic">Joined {{ user.date_joined|date:"M Y" }}</span>
         </div>
     </div>
