@@ -9,10 +9,12 @@ admin.site.register(Candidate)
 # 2. Participation Ledger (Admin can see WHO voted)
 @admin.register(ParticipationLedger)
 class ParticipationLedgerAdmin(admin.ModelAdmin):
-    list_display = ('voter', 'position', 'voted_at')
+    # Change 'voter' to 'voter_hash'
+    list_display = ('voter_hash', 'position', 'voted_at') 
     list_filter = ('position',)
-    search_fields = ('voter__user__username', 'voter__student__full_name')
-
+    # Remove search_fields that refer to the old voter model
+    search_fields = ('voter_hash',)
+    
 # 3. Anonymous Ballots (Admin can see the CHOICES, but they are anonymous)
 @admin.register(AnonymousBallot)
 class AnonymousBallotAdmin(admin.ModelAdmin):

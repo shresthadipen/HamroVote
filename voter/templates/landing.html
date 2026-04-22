@@ -69,16 +69,24 @@
                 </p>
                 
                 <div class="flex flex-col sm:flex-row gap-4">
-                    {% if user.is_authenticated %}
-                        <a href="{% url 'voter:voter_dashboard' %}" class="px-10 py-5 bg-white text-indigo-900 rounded-2xl font-bold hover:shadow-2xl transition flex items-center justify-center">
-                            <i class="fas fa-vote-yea mr-3"></i> Go to Booth
-                        </a>
-                    {% else %}
-                        <a href="{% url 'accounts:register' %}" class="px-10 py-5 bg-white text-indigo-900 rounded-2xl font-bold hover:shadow-2xl transition flex items-center justify-center">
-                            Get Started
-                        </a>
-                        
-                    {% endif %}
+                   {% if user.is_authenticated %}
+    {% if user.is_staff %}
+        <!-- Link for Admin/Staff -->
+        <a href="{% url 'dashboard:admin_dashboard' %}" class="px-10 py-5 bg-white text-indigo-900 rounded-2xl font-bold hover:shadow-2xl transition flex items-center justify-center">
+            <i class="fas fa-chart-line mr-3"></i> Admin Dashboard
+        </a>
+    {% else %}
+        <!-- Link for Regular Students -->
+        <a href="{% url 'voter:voter_dashboard' %}" class="px-10 py-5 bg-white text-indigo-900 rounded-2xl font-bold hover:shadow-2xl transition flex items-center justify-center">
+            <i class="fas fa-vote-yea mr-3"></i> Go to Booth
+        </a>
+    {% endif %}
+{% else %}
+    <!-- Link for Logged Out Users -->
+    <a href="{% url 'accounts:register' %}" class="px-10 py-5 bg-white text-indigo-900 rounded-2xl font-bold hover:shadow-2xl transition flex items-center justify-center">
+        Get Started
+    </a>
+{% endif %}
                 </div>
             </div>
 
@@ -215,7 +223,7 @@
                     &copy; 2025 HamroVote. All Rights Reserved.
                 </p>
                 <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest">
-                    Designed by Dipen Shrestha
+                    Created by Dipen Shrestha
                 </p>
             </div>
         </div>
